@@ -23,7 +23,10 @@ mk('w2','집회준비','주말 집회','공개 강연 준비','','주제와 주�
 mk('w3','집회준비','파수대 연구','파수대 연구 준비','','각 항의 질문에 답하고 핵심 성구가 요점과 어떻게 연결되는지 살펴봅니다.','나에게 특히 필요한 한 가지를 표시합니다.',['파수대']),
 mk('w4','집회준비','해설 준비','짧고 명확한 해설 준비','','질문에 직접 답하는 핵심 문장과 보충 요점을 구분해 준비합니다.','30초 안에 자연스럽게 말할 수 있게 정리합니다.',['해설'])
 ];
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||seed,tab='개인연구',sub='전체',editId=null;
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||seed;
+for(const s of seed){if(!data.some(x=>x.id===s.id))data.push(s)}
+localStorage.setItem(KEY,JSON.stringify(data));
+let tab='개인연구',sub='전체',editId=null;
 const $=s=>document.querySelector(s),cats=['봉사모임','개인연구','집회준비','즐겨찾기'];
 const esc=(s='')=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
