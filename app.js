@@ -1,4 +1,5 @@
 const SEED=(window.APP_SEED||[]).map(x=>({...x,favorite:false,source:x.source||''}));
+if(window.MINISTRY_SHORT){for(const s of SEED){const p=window.MINISTRY_SHORT[s.id];if(p)Object.assign(s,p)}}
 const BUILTIN=new Set(SEED.map(x=>x.id));
 const STATE_KEY='personalStudyStateV2';
 const OLD_KEY='personalStudyDataV1';
