@@ -7,3 +7,5 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden;overscroll-behavio
 .detailBody{white-space:normal!important;font-size:16px!important;line-height:1.55!important}.detailBody .para{margin:0 0 .65em 0!important}.detailBody .para:last-child{margin-bottom:0!important}.detailWrap{padding-top:10px!important}.detailWrap h2{margin-top:2px!important;margin-bottom:4px!important}.detailWrap .scripture{margin-top:3px!important;margin-bottom:6px!important}
 /* v14 reading rhythm */
 .detailBody .para{margin:0 0 .72em 0!important}.detailBody .para br{display:block;content:'';margin-top:.12em}
+/* v17 ensure paragraph breaks render */
+.detailBody .para{display:block!important;margin:0 0 .75em!important;line-height:1.55!important}.detailBody br{display:block!important;content:''!important;margin-top:.08em!important}
