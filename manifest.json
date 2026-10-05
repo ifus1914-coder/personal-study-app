@@ -1,7 +1,7 @@
 {
   "name": "개인연구",
   "short_name": "개인연구",
-  "start_url": "./?app=27",
+  "start_url": "./?app=28",
   "display": "standalone",
   "background_color": "#f5f3ed",
   "theme_color": "#52624d",
