@@ -1,51 +1,110 @@
-const KEY='personalStudyDataV1';
-const mk=(id,category,subcategory,title,scripture,content,application,keywords)=>({id,category,subcategory,title,scripture,content,application,keywords,favorite:false,source:''});
-const seed=[
-mk('m1','봉사모임','호별',"잘 듣는 것이 좋은 대화의 시작입니다","야고보서 1:19","여러분, 오늘 봉사에 나가기 전에 한 가지 질문을 생각해 보겠습니다.\n\n“봉사에서 말을 잘하는 것과 잘 듣는 것 중 어느 것이 더 중요할까요?” 우리는 봉사하기 전에 어떤 말을 할지 준비합니다. 어떤 성구를 사용할지, 어떤 질문을 할지 생각하죠.\n\n그런데 막상 집주인을 만나면 우리가 예상하지 못했던 말을 할 때가 있습니다.\n“요즘 너무 힘들어요.” “가족 때문에 걱정이 많아요.”\n“세상이 왜 이렇게 되는지 모르겠어요.”\n\n이때 우리가 준비한 내용을 계속 이야기하는 것보다 더 중요한 것이 있을 수 있습니다.\n야고보서 1:19을 한번 읽어 보겠습니다.\n“모든 사람은 듣기는 빨리 하고, 말하기는 더디 해야 합니다.”\n\n여기서 한 가지 질문을 드려볼게요.\n왜 봉사에서도 ‘듣기는 빨리 하는 것’이 중요할까요?\n\n[한두 사람의 대답을 들어본다.]\n\n그렇습니다. 상대방의 말을 잘 들어야 그 사람이 무엇에 관심이 있는지, 무엇 때문에 힘들어하는지 알 수 있습니다.\n\n예를 하나 생각해 보겠습니다. 우리가 오늘 ‘앞으로 세상이 좋아질 것이라는 희망’을 전하려고 준비했다고 해보죠.\n\n그런데 집주인이 이렇게 말합니다.\n“저는 세상 문제보다 요즘 아들이 직장을 잃어서 그게 제일 걱정이에요.”\n\n그런데 우리가 그 말을 듣고도,\n“네, 그런데 성경에서는 앞으로 세상이 좋아질 거라고 알려 줍니다.”\n하고 준비한 내용만 계속 이야기한다면 어떨까요?\n\n틀린 말을 한 것은 아니지만, 그분은 ‘내 이야기를 별로 듣지 않는구나’ 하고 느낄 수도 있습니다.\n\n반대로 이렇게 말해 볼 수 있겠죠.\n“아드님 때문에 마음고생이 많으시겠어요. 부모라면 정말 걱정되실 것 같아요.”\n그리고 잠깐 그분의 이야기를 들어주는 겁니다.\n\n그다음 그분의 상황에 맞는 성경의 위로나 JW.ORG의 내용을 자연스럽게 소개할 수 있습니다. 그러면 우리가 준비했던 내용과 조금 달라지더라도, 오히려 그 사람에게 필요한 이야기를 나누는 봉사가 될 수 있습니다.\n\n예수께서도 사람들을 단순히 많은 사람 가운데 한 명으로 보지 않으셨습니다. 각 사람이 무엇을 필요로 하는지 관심을 가지셨습니다.\n\n그래서 오늘 봉사에서는 한 가지를 목표로 해보면 어떨까요?\n‘내가 얼마나 말을 잘했는가?’보다 ‘나는 상대방의 말을 얼마나 잘 들어주었는가?’를 생각해 보는 겁니다.\n\n특히 상대방이 자신의 걱정이나 생각을 이야기한다면 바로 다음 말을 준비하기보다 그 말을 조금 더 들어보겠습니다.\n“그 점이 가장 걱정되세요?”\n“그렇게 생각하시게 된 특별한 이유가 있으세요?”\n\n이런 짧은 질문 하나가 좋은 대화의 시작이 될 수 있습니다.\n\n오늘 봉사를 마칠 때는 각자 한 번 생각해 보시면 좋겠습니다.\n‘오늘 나는 누군가의 이야기를 진심으로 들어주었는가?’\n\n그렇게 한다면 단지 우리가 준비한 내용을 전달하는 데 그치지 않고, 사람에게 진정한 관심을 보이는 봉사를 할 수 있을 것입니다.\n\n그럼 오늘도 사람들의 이야기를 잘 들으면서 따뜻하게 봉사해 보겠습니다.",'오늘 한 사람의 이야기를 진심으로 끝까지 들어봅니다.',['듣기','대화','봉사모임','호별']),
-mk('m2','봉사모임','호별','좋은 반응이 없어도 낙심하지 마십시오','전도서 11:6','여러분, 오늘 봉사를 시작하기 전에 이런 상황을 생각해 보겠습니다.\\n\\n한 시간 정도 봉사를 했는데 문을 열어 주는 분이 거의 없습니다. 어렵게 한 분을 만났는데 “관심 없습니다” 하고 바로 문을 닫습니다.\\n\\n그런 일이 반복되면 ‘오늘은 별로 성과가 없네’ 하는 생각이 들 수도 있습니다.\\n\\n전도서 11:6을 읽어 보겠습니다.\\n\\n농부가 오늘 씨를 뿌리고 내일 열매가 없다고 실망할까요?\\n\\n[대답을 들어본다.]\\n\\n그렇지 않습니다. 씨가 자라는 데는 시간이 필요합니다. 우리의 봉사도 비슷합니다. 오늘 전한 짧은 말이나 알려 준 JW.ORG를 그분이 나중에 다시 생각할 수도 있습니다.\\n\\n우리의 역할은 반드시 그 자리에서 좋은 반응을 얻는 것이 아니라 충실하게 씨를 뿌리는 것입니다.\\n\\n오늘은 ‘좋은 반응을 얼마나 얻었는가?’보다 ‘나는 얼마나 기쁘고 친절하게 씨를 뿌렸는가?’를 생각해 보겠습니다.\\n\\n봉사를 마칠 때 ‘오늘도 나는 씨를 뿌렸다. 그 씨가 어떻게 자랄지는 여호와께 맡기자’라고 생각해 보면 좋겠습니다.','반응보다 친절하고 기쁘게 씨를 뿌리는 데 집중합니다.',['낙심','씨']),
-mk('m3','봉사모임','호별','질문 하나로 대화를 이어 가는 방법','잠언 20:5','여러분, 오늘은 봉사에서 질문을 잘 사용하는 방법을 생각해 보겠습니다.\\n\\n잠언 20:5을 읽어 보겠습니다. 사람의 마음속 생각은 깊은 물과 같습니다. 좋은 질문은 그 생각을 길어 올리는 데 도움이 됩니다.\\n\\n예를 들어 “요즘 세상이 좋아지고 있다고 생각하세요?”라고 물었는데 “아니요”라고 답한다면 “어떤 점을 보면 특히 그렇게 느끼세요?”라고 물어볼 수 있습니다.\\n\\n또 “종교에는 관심이 없습니다”라고 한다면 “혹시 그렇게 생각하시게 된 특별한 이유가 있으세요?”라고 부드럽게 물을 수 있습니다.\\n\\n좋은 질문에는 어떤 특징이 있을까요?\\n\\n[한두 사람의 대답을 들어본다.]\\n\\n상대방을 시험하는 질문이 아니라 그분의 생각을 알고 싶어서 하는 질문이어야 합니다.\\n\\n오늘은 상대방이 짧게 대답했을 때 바로 말을 이어 가지 말고 생각을 묻는 질문을 하나 더 해보겠습니다. 질문했다면 답할 시간을 기다려 주겠습니다.','짧은 대답 뒤에 생각을 묻는 질문을 하나 더 해봅니다.',['질문','대화']),
-mk('m4','봉사모임','호별','동료 전도인을 격려하는 봉사','데살로니가 전서 5:11','오늘은 집주인뿐 아니라 함께 봉사하는 동료에 대해서도 생각해 보겠습니다.\\n\\n데살로니가 전서 5:11에서는 서로를 계속 격려하고 서로 세워 주라고 권합니다.\\n\\n경험이 많지 않은 전도인이 첫 집에서 준비했던 말을 잊었다고 해보겠습니다. “그 부분은 그렇게 말하면 안 돼요”라고 하기보다 “처음 질문하신 게 참 자연스러웠어요”라고 말해 준다면 어떨까요?\\n\\n여러분이라면 그런 말을 들었을 때 어떤 기분이 들 것 같습니까?\\n\\n[대답을 들어본다.]\\n\\n다음 집에서도 다시 해보고 싶은 마음이 생길 것입니다. 경험이 많은 전도인은 상대방이 잘한 점을 찾아 줄 수 있습니다.\\n\\n오늘은 함께 봉사하는 사람에게 적어도 한 번 진심 어린 격려를 해보겠습니다. 봉사를 마칠 때 서로가 ‘오늘 함께 봉사해서 좋았다’고 느낀다면 좋은 봉사 시간이 될 것입니다.','오늘 동료에게 진심 어린 격려를 한 번 합니다.',['격려','동료']),
-mk('m5','봉사모임','호별','무관심한 사람을 만났을 때','골로새서 4:6','오늘은 봉사에서 자주 듣는 “관심 없어요”라는 말에 어떻게 반응할지 생각해 보겠습니다.\\n\\n골로새서 4:6에서는 우리의 말을 언제나 은혜롭게 하라고 권합니다.\\n\\n“저는 성경에 관심 없어요”라고 말하면 의사를 존중해야 합니다. 하지만 “네, 알겠습니다. 늘 건강하시고 좋은 일 있으셨으면 좋겠습니다”라고 따뜻하게 마칠 수 있습니다.\\n\\n이런 태도는 어떤 인상을 남길까요?\\n\\n[대답을 들어본다.]\\n\\n모든 방문에서 반드시 성구를 읽어야 성공적인 것은 아닙니다. 때로는 짧은 친절이 다음 방문을 위한 좋은 토대가 됩니다.\\n\\n오늘은 거절을 받아도 마지막까지 따뜻하고 존중하는 태도를 보여 보겠습니다.','거절을 받아도 마지막 인사를 따뜻하게 합니다.',['무관심','친절']),
-mk('m6','봉사모임','호별','JW.ORG를 효과적으로 활용하기','','오늘은 봉사에서 JW.ORG를 어떻게 더 잘 활용할 수 있을지 생각해 보겠습니다.\\n\\n어떤 분이 “요즘 아이 키우기가 정말 힘들어요”라고 말한다면 여러 원칙을 한꺼번에 설명하기보다 관련된 실용적인 조언 하나를 보여 줄 수 있습니다.\\n\\n또 “가족을 잃은 뒤로 너무 힘들어요”라고 한다면 위로나 부활의 희망과 관련된 자료 하나를 보여 줄 수 있습니다.\\n\\nJW.ORG를 보여 줄 때 어떤 점을 조심하면 좋을까요?\\n\\n[대답을 들어본다.]\\n\\n너무 많은 자료를 한꺼번에 보여 주지 않고 그 사람이 관심을 보인 한 가지 주제에 집중하는 것이 좋습니다.\\n\\n오늘은 ‘이 사람에게 지금 가장 필요한 내용은 무엇일까?’를 생각하고 적절한 자료 하나를 보여 주도록 하겠습니다.','봉사 전에 사용할 주제 하나를 미리 찾아둡니다.',['JW.ORG','자료']),
-mk('m7','봉사모임','호별','사람을 숫자가 아니라 한 사람으로 보십시오','마태복음 9:36','오늘 봉사를 시작하기 전에 예수께서 사람들을 어떻게 바라보셨는지 생각해 보겠습니다.\\n\\n마태복음 9:36을 읽어 보겠습니다. 예수께서는 무리를 보시고 그들을 불쌍히 여기셨습니다.\\n\\n문을 열어 준 사람에게는 우리가 모르는 사정이 있을 수 있습니다. 가족 문제, 건강 문제, 경제적인 어려움이나 슬픔이 있을지도 모릅니다.\\n\\n집주인이 무뚝뚝할 때 ‘왜 저렇게 불친절하지?’보다 ‘혹시 무슨 힘든 일이 있는 건 아닐까?’라고 생각한다면 우리의 말투가 어떻게 달라질까요?\\n\\n[대답을 들어본다.]\\n\\n오늘은 ‘무엇을 말할까?’보다 ‘이 사람은 어떤 사람일까?’를 먼저 생각해 보겠습니다. 표정과 말투를 살피고 그분의 이야기에 관심을 가져 보겠습니다.','무엇을 말할지보다 이 사람이 어떤 사람인지 먼저 생각합니다.',['관심','동정심']),
-mk('m8','봉사모임','호별','여호와께 맡기고 즐겁게 봉사하십시오','고린도 전서 3:6, 7','오늘은 우리가 왜 기쁘게 봉사할 수 있는지 생각해 보겠습니다.\\n\\n고린도 전서 3:6, 7에서 바울은 자신은 심었고 아볼로는 물을 주었지만 자라게 하신 분은 하느님이라고 설명했습니다.\\n\\n우리가 처음 만난 사람을 다음에는 다른 전도인이 만나고, 그 후 그 사람이 JW.ORG를 읽고 성경 공부를 시작했다고 해보겠습니다. 누가 그 사람을 진리로 이끈 것입니까?\\n\\n[대답을 들어본다.]\\n\\n모두가 조금씩 역할을 했지만 자라게 하시는 분은 여호와이십니다.\\n\\n우리가 말을 완벽하게 해야 하는 것도 아니고 모든 질문에 대답해야 하는 것도 아닙니다. 오늘 우리가 하는 일은 씨를 심는 것일 수도 있고 전에 심은 씨에 물을 주는 것일 수도 있습니다.\\n\\n오늘은 완벽하게 말하는 것보다 사람을 사랑하고 충실하게 참여하는 데 집중해 보겠습니다. 나머지는 여호와께 맡기겠습니다.','할 수 있는 일을 충실히 하고 결과는 여호와께 맡깁니다.',['기쁨','결과']),
-mk('e1','봉사모임','공개증거','사람들이 다가오기 쉬운 전도인이 되려면','고린도 전서 13:4, 5','따뜻한 표정과 편안한 자세로 사람들이 부담 없이 다가올 수 있게 합니다.','오늘 전시대에서 표정과 자세가 따뜻한지 의식해 봅니다.',['공개증거','전시대','다가오기']),
-mk('e2','봉사모임','공개증거','먼저 관찰하고 관심사를 알아낸다','요한복음 4:6-9','상대방을 먼저 관찰하고 관심사를 파악해 그 사람에게 맞는 대화를 시작합니다.','지나가는 사람의 상황과 관심을 관찰한 뒤 자연스럽게 말을 건넵니다.',['공개증거','관찰','관심사']),
-mk('e3','봉사모임','공개증거','전시대 봉사의 목표는 대화를 시작하는 것이다','요한복음 6:44','출판물을 전하는 데 그치지 않고 성경에 관한 자연스러운 대화와 연구로 이어지도록 돕습니다.','자료 배부보다 좋은 대화를 시작하는 데 초점을 둡니다.',['공개증거','전시대','대화']),
-mk('e4','봉사모임','공개증거','반응이 적어도 우리의 수고는 헛되지 않는다','고린도 전서 15:58','즉각적인 반응보다 충실한 노력 자체가 가치 있다는 점을 기억합니다.','반응이 적어도 기쁨과 좋은 태도를 유지합니다.',['공개증거','인내','수고']),
-mk('e5','봉사모임','공개증거','전시대는 말없이도 증거한다','마태복음 24:14','전시대와 우리의 단정하고 친절한 모습 자체가 지나가는 사람들에게 좋은 인상을 줄 수 있습니다.','사람이 다가오지 않아도 좋은 인상을 주는 태도를 유지합니다.',['공개증거','전시대','증거']),
-mk('e6','봉사모임','공개증거','반대하는 사람에게 온화하게 대응한다','잠언 15:1','논쟁하려 하지 않고 온화하고 침착하게 대응하며 필요하면 대화를 정중히 마칩니다.','평정심과 안전을 우선하며 부드럽게 대답합니다.',['공개증거','온화','반대']),
-mk('e7','봉사모임','공개증거','꾸준한 봉사는 신뢰와 친숙함을 만든다','갈라디아서 6:9','같은 장소에서 꾸준히 봉사하면 반복해서 보는 사람들이 친숙함과 신뢰를 느낄 수 있습니다.','전에 본 사람을 기억하고 따뜻하게 인사합니다.',['공개증거','꾸준함','신뢰']),
-mk('e8','봉사모임','공개증거','다가오는 사람에게는 보이지 않는 사연이 있다','야고보서 1:19','다가오는 사람에게 바로 설명하기보다 먼저 충분히 듣고 그 사람의 필요를 이해합니다.','말하기보다 먼저 잘 듣는 것을 목표로 합니다.',['공개증거','듣기','관심']),
-mk('p1','개인연구','성경 인물','성경 인물 연구','','인물의 배경, 선택, 믿음, 결과를 살펴보고 배울 점을 기록합니다.','내 상황에 적용할 한 가지를 적어봅니다.',['인물']),
-mk('p2','개인연구','여호와의 특성','여호와의 특성 연구','','한 가지 특성을 정하고 관련 성구와 기록에서 그 특성이 어떻게 나타나는지 연구합니다.','그 특성을 본받을 방법을 정합니다.',['여호와','특성']),
-mk('p3','개인연구','예수의 본','예수의 말과 행동에서 배우기','','복음서의 한 장면을 선택해 예수의 생각, 말, 행동을 관찰합니다.','예수의 태도를 오늘 어떻게 본받을지 기록합니다.',['예수','본']),
-mk('p4','개인연구','성구 연구','한 성구 깊이 연구하기','','문맥, 핵심 표현, 관련 성구, 배경 자료를 살펴봅니다.','이 성구가 내 결정과 생활에 어떤 영향을 주는지 적습니다.',['성구','문맥']),
-mk('p5','개인연구','성경 질문','궁금했던 성경 질문','','질문을 하나 정하고 성경과 공식 자료에서 근거를 찾아 결론을 정리합니다.','알게 된 점을 짧게 설명할 수 있도록 정리합니다.',['질문']),
-mk('p6','개인연구','그리스도인 특성','기르고 싶은 그리스도인 특성','','한 가지 특성을 정하고 좋은 본과 실천 방법을 연구합니다.','이번 주 실천 목표를 하나 정합니다.',['특성','생활']),
-mk('p7','개인연구','봉사 적용','봉사에 적용할 개인 연구','','봉사에서 개선하고 싶은 점을 정해 성경 원칙과 실제 적용 방법을 연구합니다.','다음 봉사에서 한 가지를 직접 사용합니다.',['봉사','적용']),
-mk('p8','개인연구','가족·생활','가족과 일상생활에 적용하기','','가족 관계와 일상에서 도움이 필요한 주제를 정해 성경 원칙을 찾습니다.','가정에서 실천할 구체적인 행동을 정합니다.',['가족','생활']),
-mk('w1','집회준비','평일 집회','평일 집회 준비','','성경 읽기 범위와 각 부분의 핵심점을 미리 살펴보고 해설할 점을 기록합니다.','해설할 한 가지 요점을 준비합니다.',['평일집회']),
-mk('w2','집회준비','주말 집회','공개 강연 준비','','주제와 주요 성구를 미리 살펴보고 듣고 싶은 질문을 정리합니다.','강연에서 얻은 적용점을 기록합니다.',['공개강연']),
-mk('w3','집회준비','파수대 연구','파수대 연구 준비','','각 항의 질문에 답하고 핵심 성구가 요점과 어떻게 연결되는지 살펴봅니다.','나에게 특히 필요한 한 가지를 표시합니다.',['파수대']),
-mk('w4','집회준비','해설 준비','짧고 명확한 해설 준비','','질문에 직접 답하는 핵심 문장과 보충 요점을 구분해 준비합니다.','30초 안에 자연스럽게 말할 수 있게 정리합니다.',['해설'])
-];
-let stored=JSON.parse(localStorage.getItem(KEY)||'null')||[];
-let overrides=JSON.parse(localStorage.getItem('personalStudyOverridesV1')||'{}');
-const builtinIds=new Set(seed.map(x=>x.id));
-let data=[...seed.filter(s=>!overrides[s.id]?._deleted).map(s=>({...s,...(overrides[s.id]||{})})),...stored.filter(x=>!builtinIds.has(x.id))];
-localStorage.setItem(KEY,JSON.stringify(data));
-let tab='개인연구',sub='전체',editId=null;
-const $=s=>document.querySelector(s),cats=['봉사모임','봉사서론','개인연구','집회준비','즐겨찾기'];
+const SEED=(window.APP_SEED||[]).map(x=>({...x,favorite:false,source:x.source||''}));
+const BUILTIN=new Set(SEED.map(x=>x.id));
+const STATE_KEY='personalStudyStateV2';
+const OLD_KEY='personalStudyDataV1';
+const CATS=['봉사모임','봉사서론','개인연구','집회준비','즐겨찾기'];
+const $=s=>document.querySelector(s);
 const esc=(s='')=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function save(){for(const x of data){if(builtinIds.has(x.id))overrides[x.id]={...x}}localStorage.setItem('personalStudyOverridesV1',JSON.stringify(overrides));localStorage.setItem(KEY,JSON.stringify(data.filter(x=>!builtinIds.has(x.id))))}
-function card(x){return '<article class="card compact" data-open="'+x.id+'"><div class="cardTop"><div><div class="meta">'+esc(x.subcategory)+'</div><h3>'+esc(x.title)+'</h3>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'</div><span>'+(x.favorite?'⭐':'')+'</span></div><div class="cardActions"><button class="fav" data-fav="'+x.id+'">'+(x.favorite?'즐겨찾기 해제':'☆ 즐겨찾기')+'</button><button data-edit="'+x.id+'">수정</button><button class="danger" data-del="'+x.id+'">삭제</button></div></article>'}
-function render(){ $('#tabs').innerHTML=cats.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+c+'">'+c+'</button>').join('');let base=tab==='즐겨찾기'?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);let subs=['전체',...new Set(base.map(x=>x.subcategory))];if(!subs.includes(sub))sub='전체';$('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+s+'">'+s+'</button>').join('');let q=$('#search').value.trim().toLowerCase();let rows=base.filter(x=>(sub==='전체'||x.subcategory===sub)&&(!q||[x.title,x.scripture,x.content,x.application,(x.keywords||[]).join(' ')].join(' ').toLowerCase().includes(q)));$('#list').innerHTML=rows.length?rows.map(card).join(''):'<div class="empty">해당 자료가 없습니다.<br>＋ 새 자료로 직접 추가할 수 있습니다.</div>'}
-function formatContent(v){let s=String(v||'').replace(/\\\\n/g,'\n');return esc(s).split(/\n\s*\n/).map(p=>'<p class="para">'+p.replace(/\n/g,'<br>')+'</p>').join('')}
-function openDetail(x){if(!x)return;let d=document.querySelector('#detail');if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(x.source)+'">공식 자료 열기 ↗</a></p>':'')+'</div>';d.querySelector('.detailClose').onclick=()=>d.close();d.showModal()}
-function openEditor(x=null){editId=x?.id||null;$('#formTitle').textContent=x?'자료 수정':'새 자료';$('#category').innerHTML=cats.slice(0,4).map(c=>'<option>'+c+'</option>').join('');$('#category').value=x?.category||(tab==='즐겨찾기'?'개인연구':tab);for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';$('#keywords').value=(x?.keywords||[]).join(', ');$('#editor').showModal()}
-document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b){let card=e.target.closest('.card');if(card&&card.dataset.open)openDetail(data.find(v=>v.id===card.dataset.open));return;}if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}else if(b.dataset.sub){sub=b.dataset.sub;render()}else if(b.dataset.fav){let x=data.find(v=>v.id===b.dataset.fav);x.favorite=!x.favorite;save();render()}else if(b.dataset.edit)openEditor(data.find(v=>v.id===b.dataset.edit));else if(b.dataset.del&&confirm('이 자료를 삭제할까요?')){const id=b.dataset.del;data=data.filter(v=>v.id!==id);if(builtinIds.has(id))overrides[id]={_deleted:true};save();render()}});
-$('#search').addEventListener('input',render);$('#addBtn').onclick=()=>openEditor();$('#cancel').onclick=()=>$('#editor').close();
-$('#form').onsubmit=e=>{e.preventDefault();let old=data.find(x=>x.id===editId);let obj={id:editId||String(Date.now()),category:$('#category').value,subcategory:$('#subcategory').value.trim(),title:$('#title').value.trim(),scripture:$('#scripture').value.trim(),content:$('#content').value.trim(),application:$('#application').value.trim(),keywords:$('#keywords').value.split(',').map(x=>x.trim()).filter(Boolean),source:$('#source').value.trim(),favorite:old?.favorite||false};if(editId)data=data.map(x=>x.id===editId?obj:x);else data.unshift(obj);save();$('#editor').close();tab=obj.category;sub='전체';render()};
-let deferred;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});$('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');render();
+
+function loadState(){
+  let st={custom:[],overrides:{},deleted:[],favorites:{}};
+  try{Object.assign(st,JSON.parse(localStorage.getItem(STATE_KEY)||'{}'))}catch{}
+  if(!localStorage.getItem(STATE_KEY)){
+    try{
+      const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
+      st.custom=old.filter(x=>!BUILTIN.has(x.id));
+      for(const x of old){if(BUILTIN.has(x.id)&&x.favorite)st.favorites[x.id]=true}
+    }catch{}
+    localStorage.setItem(STATE_KEY,JSON.stringify(st));
+  }
+  return st;
+}
+let state=loadState();
+function buildData(){
+  const deleted=new Set(state.deleted||[]);
+  const built=SEED.filter(x=>!deleted.has(x.id)).map(s=>({...s,...(state.overrides?.[s.id]||{}),favorite:!!state.favorites?.[s.id]}));
+  const custom=(state.custom||[]).map(x=>({...x,favorite:!!x.favorite}));
+  return [...built,...custom];
+}
+let data=buildData(),tab='개인연구',sub='전체',editId=null;
+
+function persist(){
+  localStorage.setItem(STATE_KEY,JSON.stringify(state));
+  data=buildData();
+}
+function formatContent(v){
+  const s=String(v||'').replace(/\\n/g,'\n');
+  return s.split(/\n\s*\n/).map(p=>'<p class="para">'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
+}
+function card(x){
+  return '<article class="card compact" data-open="'+x.id+'"><div class="cardTop"><div><div class="meta">'+esc(x.subcategory)+'</div><h3>'+esc(x.title)+'</h3>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'</div><span>'+(x.favorite?'⭐':'')+'</span></div><div class="cardActions"><button class="fav" data-fav="'+x.id+'">'+(x.favorite?'즐겨찾기 해제':'☆ 즐겨찾기')+'</button><button data-edit="'+x.id+'">수정</button><button class="danger" data-del="'+x.id+'">삭제</button></div></article>';
+}
+function render(){
+  $('#tabs').innerHTML=CATS.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+c+'">'+c+'</button>').join('');
+  let base=tab==='즐겨찾기'?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);
+  const subs=['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))];
+  if(!subs.includes(sub))sub='전체';
+  $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+s+'">'+s+'</button>').join('');
+  const q=$('#search').value.trim().toLowerCase();
+  const rows=base.filter(x=>(sub==='전체'||x.subcategory===sub)&&(!q||[x.title,x.scripture,x.content,x.application,(x.keywords||[]).join(' ')].join(' ').toLowerCase().includes(q)));
+  $('#list').innerHTML=rows.length?rows.map(card).join(''):'<div class="empty">해당 자료가 없습니다.<br>＋ 새 자료로 직접 추가할 수 있습니다.</div>';
+}
+function openDetail(x){
+  if(!x)return;
+  let d=$('#detail');
+  if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}
+  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(x.source)+'">공식 자료 열기 ↗</a></p>':'')+'</div>';
+  d.querySelector('.detailClose').onclick=()=>d.close();
+  d.showModal();
+}
+function openEditor(x=null){
+  editId=x?.id||null;
+  $('#formTitle').textContent=x?'자료 수정':'새 자료';
+  $('#category').innerHTML=CATS.slice(0,4).map(c=>'<option>'+c+'</option>').join('');
+  $('#category').value=x?.category||(tab==='즐겨찾기'?'개인연구':tab);
+  for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
+  $('#keywords').value=(x?.keywords||[]).join(', ');
+  $('#editor').showModal();
+}
+function setFavorite(id){
+  if(BUILTIN.has(id))state.favorites[id]=!state.favorites[id];
+  else{const x=state.custom.find(v=>v.id===id);if(x)x.favorite=!x.favorite}
+  persist();render();
+}
+function removeItem(id){
+  if(BUILTIN.has(id)){if(!state.deleted.includes(id))state.deleted.push(id);delete state.overrides[id];delete state.favorites[id]}
+  else state.custom=state.custom.filter(x=>x.id!==id);
+  persist();render();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(!b){const card=e.target.closest('.card');if(card?.dataset.open)openDetail(data.find(v=>v.id===card.dataset.open));return}
+  if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}
+  else if(b.dataset.sub){sub=b.dataset.sub;render()}
+  else if(b.dataset.fav)setFavorite(b.dataset.fav);
+  else if(b.dataset.edit)openEditor(data.find(v=>v.id===b.dataset.edit));
+  else if(b.dataset.del&&confirm('이 자료를 삭제할까요?'))removeItem(b.dataset.del);
+});
+$('#search').addEventListener('input',render);
+$('#addBtn').onclick=()=>openEditor();
+$('#cancel').onclick=()=>$('#editor').close();
+$('#form').onsubmit=e=>{
+  e.preventDefault();
+  const old=data.find(x=>x.id===editId);
+  const obj={id:editId||String(Date.now()),category:$('#category').value,subcategory:$('#subcategory').value.trim(),title:$('#title').value.trim(),scripture:$('#scripture').value.trim(),content:$('#content').value.trim(),application:$('#application').value.trim(),keywords:$('#keywords').value.split(',').map(x=>x.trim()).filter(Boolean),source:$('#source').value.trim(),favorite:old?.favorite||false};
+  if(editId&&BUILTIN.has(editId)){
+    const base=SEED.find(x=>x.id===editId)||{};
+    state.overrides[editId]={...obj};
+    if(obj.favorite)state.favorites[editId]=true;else delete state.favorites[editId];
+  }else if(editId){
+    state.custom=state.custom.map(x=>x.id===editId?obj:x);
+  }else{
+    state.custom.unshift(obj);
+  }
+  persist();$('#editor').close();tab=obj.category;sub='전체';render();
+};
+let deferred;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
+$('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
+render();
