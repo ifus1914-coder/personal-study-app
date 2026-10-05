@@ -57,9 +57,7 @@ async function syncNow(first=false){
     if(!remote){
       await cloudWrite();
     }else if(first&&isStateEmpty(state)){
-      state=remote.state||state;localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(DIRTY_KEY,'0');localStorage.setItem(SERVER_KEY,remote.updated_at||'');data=buildData();render();
-if(authSession){setSyncButton('동기화 대기');syncNow(true)}
-window.addEventListener('online',()=>{if(authSession)syncNow(false)});setSyncButton('동기화됨');
+      state=remote.state||state;localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(DIRTY_KEY,'0');localStorage.setItem(SERVER_KEY,remote.updated_at||'');data=buildData();render();setSyncButton('동기화됨');
     }else if(dirty){
       await cloudWrite();
     }else{
@@ -169,6 +167,7 @@ function loadState(){
       for(const x of old){if(BUILTIN.has(x.id)&&x.favorite)st.favorites[x.id]=true}
     }catch{}
     localStorage.setItem(STATE_KEY,JSON.stringify(st));
+    if(!isStateEmpty(st))localStorage.setItem(DIRTY_KEY,'1');
   }
   return st;
 }
@@ -261,5 +260,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=26',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v26').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=27',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v27').map(k=>caches.delete(k))))}
 render();
+if(authSession){setSyncButton('동기화 대기');syncNow(true)}
+window.addEventListener('online',()=>{if(authSession)syncNow(false)});
