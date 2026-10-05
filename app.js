@@ -3,7 +3,8 @@ if(window.MINISTRY_SHORT){for(const s of SEED){const p=window.MINISTRY_SHORT[s.i
 const BUILTIN=new Set(SEED.map(x=>x.id));
 const STATE_KEY='personalStudyStateV2';
 const OLD_KEY='personalStudyDataV1';
-const CATS=['봉사모임','봉사서론','개인연구','집회준비','즐겨찾기'];
+const BASE_CATS=['봉사모임','봉사서론','개인연구','집회준비'];
+const FAVORITES_CAT='즐겨찾기';
 const $=s=>document.querySelector(s);
 
 const SUPABASE_URL='https://rhphbkduummnientfgmp.supabase.co';
@@ -46,7 +47,7 @@ function friendlyAuthError(j,status){
   if(status===429)return '요청이 많습니다. 잠시 후 다시 시도해 주세요.';
   return j?.msg||j?.error_description||j?.message||'처리 중 오류가 발생했습니다.';
 }
-function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length)}
+function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length||s.categories?.length||s.hiddenCategories?.length)}
 async function cloudRead(){
   if(!await ensureSession())return null;
   const uid=authSession?.user?.id;if(!uid)return null;
@@ -176,8 +177,14 @@ function scriptureHtml(ref){
 
 
 function loadState(){
-  let st={custom:[],overrides:{},deleted:[],favorites:{}};
+  let st={custom:[],overrides:{},deleted:[],favorites:{},categories:[],hiddenCategories:[]};
   try{Object.assign(st,JSON.parse(localStorage.getItem(STATE_KEY)||'{}'))}catch{}
+  st.custom=Array.isArray(st.custom)?st.custom:[];
+  st.overrides=st.overrides||{};
+  st.deleted=Array.isArray(st.deleted)?st.deleted:[];
+  st.favorites=st.favorites||{};
+  st.categories=Array.isArray(st.categories)?st.categories:[];
+  st.hiddenCategories=Array.isArray(st.hiddenCategories)?st.hiddenCategories:[];
   if(!localStorage.getItem(STATE_KEY)){
     try{
       const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
@@ -190,6 +197,13 @@ function loadState(){
   return st;
 }
 let state=loadState();
+function getCategories(includeHidden=false){
+  const hidden=new Set(state.hiddenCategories||[]);
+  const base=includeHidden?BASE_CATS:BASE_CATS.filter(x=>!hidden.has(x));
+  const custom=[...(state.categories||[])].filter(x=>x&&x!==FAVORITES_CAT);
+  return [...new Set([...base,...custom]),FAVORITES_CAT];
+}
+function categoryExists(name){return getCategories(true).includes(name)}
 function buildData(){
   const deleted=new Set(state.deleted||[]);
   const built=SEED.filter(x=>!deleted.has(x.id)).map(s=>({...s,...(state.overrides?.[s.id]||{}),favorite:!!state.favorites?.[s.id]}));
@@ -211,8 +225,10 @@ function card(x){
   return '<article class="card compact" data-open="'+x.id+'"><div class="cardTop"><div><div class="meta">'+esc(x.subcategory)+'</div><h3>'+esc(x.title)+'</h3>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'</div><span>'+(x.favorite?'⭐':'')+'</span></div><div class="cardActions"><button class="fav" data-fav="'+x.id+'">'+(x.favorite?'즐겨찾기 해제':'☆ 즐겨찾기')+'</button><button data-edit="'+x.id+'">수정</button><button class="danger" data-del="'+x.id+'">삭제</button></div></article>';
 }
 function render(){
-  $('#tabs').innerHTML=CATS.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+c+'">'+c+'</button>').join('');
-  let base=tab==='즐겨찾기'?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);
+  const cats=getCategories();
+  if(!cats.includes(tab))tab=cats.find(x=>x!==FAVORITES_CAT)||FAVORITES_CAT;
+  $('#tabs').innerHTML=cats.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+esc(c)+'">'+esc(c)+'</button>').join('');
+  let base=tab===FAVORITES_CAT?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);
   const subs=['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))];
   if(!subs.includes(sub))sub='전체';
   $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+s+'">'+s+'</button>').join('');
@@ -231,8 +247,8 @@ function openDetail(x){
 function openEditor(x=null){
   editId=x?.id||null;
   $('#formTitle').textContent=x?'자료 수정':'새 자료';
-  $('#category').innerHTML=CATS.slice(0,4).map(c=>'<option>'+c+'</option>').join('');
-  $('#category').value=x?.category||(tab==='즐겨찾기'?'개인연구':tab);
+  $('#category').innerHTML=getCategories().filter(c=>c!==FAVORITES_CAT).map(c=>'<option>'+esc(c)+'</option>').join('');
+  $('#category').value=x?.category||(tab===FAVORITES_CAT?(getCategories().find(c=>c!==FAVORITES_CAT)||'개인연구'):tab);
   for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
   $('#keywords').value=(x?.keywords||[]).join(', ');
   $('#editor').showModal();
@@ -247,6 +263,55 @@ function removeItem(id){
   else state.custom=state.custom.filter(x=>x.id!==id);
   persist();render();
 }
+
+function addCategory(name){
+  name=String(name||'').trim();
+  if(!name)return '대주제 이름을 입력해 주세요.';
+  if(name===FAVORITES_CAT)return '즐겨찾기는 기본 메뉴라 사용할 수 없는 이름입니다.';
+  if(categoryExists(name))return '이미 있는 대주제입니다.';
+  state.categories.push(name);
+  state.hiddenCategories=state.hiddenCategories.filter(x=>x!==name);
+  persist();tab=name;sub='전체';render();return '';
+}
+function deleteCategory(name){
+  if(BASE_CATS.includes(name)){
+    if(!confirm('기본 대주제 “'+name+'”를 숨길까요?\n자료는 삭제되지 않으며 나중에 다시 표시할 수 있습니다.'))return;
+    if(!state.hiddenCategories.includes(name))state.hiddenCategories.push(name);
+  }else{
+    const count=(state.custom||[]).filter(x=>x.category===name).length;
+    const msg=count?('“'+name+'” 대주제와 그 안의 사용자 추가 자료 '+count+'개를 삭제할까요?'):('“'+name+'” 대주제를 삭제할까요?');
+    if(!confirm(msg))return;
+    state.categories=state.categories.filter(x=>x!==name);
+    state.custom=state.custom.filter(x=>x.category!==name);
+    for(const [id,ov] of Object.entries(state.overrides||{})){
+      if(ov?.category===name){
+        const base=SEED.find(x=>x.id===id);
+        if(base)state.overrides[id]={...ov,category:base.category};
+      }
+    }
+  }
+  if(tab===name)tab=getCategories().find(x=>x!==FAVORITES_CAT)||FAVORITES_CAT;
+  persist();render();openCategoryManager();
+}
+function restoreCategory(name){
+  state.hiddenCategories=state.hiddenCategories.filter(x=>x!==name);
+  persist();render();openCategoryManager();
+}
+function openCategoryManager(){
+  let d=$('#categoryManager');if(!d){d=document.createElement('dialog');d.id='categoryManager';document.body.appendChild(d)}
+  const hidden=new Set(state.hiddenCategories||[]);
+  const visibleBase=BASE_CATS.filter(x=>!hidden.has(x));
+  const hiddenBase=BASE_CATS.filter(x=>hidden.has(x));
+  const custom=state.categories||[];
+  const row=(name,type)=>'<div class="catRow"><span>'+esc(name)+'</span><button type="button" class="'+(type==='restore'?'ghost':'danger')+'" data-cat-action="'+type+'" data-cat-name="'+esc(name)+'">'+(type==='restore'?'다시 표시':'삭제')+'</button></div>';
+  d.innerHTML='<div class="authWrap categoryManage"><h2>대주제 관리</h2><p>새 대주제를 추가하거나 필요 없는 대주제를 정리할 수 있습니다.</p><div class="catAdd"><input id="newCategoryName" placeholder="새 대주제 이름"><button id="categoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+visibleBase.map(x=>row(x,'delete')).join('')+custom.map(x=>row(x,'delete')).join('')+'</div>'+(hiddenBase.length?'<div class="hiddenCats"><b>숨긴 기본 대주제</b>'+hiddenBase.map(x=>row(x,'restore')).join('')+'</div>':'')+'<button id="categoryClose" class="ghost" type="button">닫기</button></div>';
+  d.querySelector('#categoryAddBtn').onclick=()=>{const input=d.querySelector('#newCategoryName');const err=addCategory(input.value);if(err)alert(err);else openCategoryManager()};
+  d.querySelector('#newCategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#categoryAddBtn').click()}});
+  d.querySelectorAll('[data-cat-action]').forEach(b=>b.onclick=()=>{const n=b.dataset.catName;if(b.dataset.catAction==='restore')restoreCategory(n);else deleteCategory(n)});
+  d.querySelector('#categoryClose').onclick=()=>d.close();
+  d.showModal();
+}
+
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
   if(!b){const card=e.target.closest('.card');if(card?.dataset.open)openDetail(data.find(v=>v.id===card.dataset.open));return}
@@ -258,6 +323,7 @@ document.addEventListener('click',e=>{
 });
 $('#search').addEventListener('input',render);
 $('#addBtn').onclick=()=>openEditor();
+$('#categoryManageBtn').onclick=openCategoryManager;
 $('#syncBtn').onclick=openSyncDialog;
 $('#cancel').onclick=()=>$('#editor').close();
 $('#form').onsubmit=e=>{
@@ -278,7 +344,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=28',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v28').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=29',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v29').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
