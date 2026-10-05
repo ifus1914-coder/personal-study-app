@@ -30,7 +30,22 @@ async function ensureSession(){
   if(exp&&Date.now()>exp-60000)return refreshSession();
   return true;
 }
-function setSyncButton(label){const b=$('#syncBtn');if(b)b.textContent=label}
+function setSyncButton(label){
+  const b=$('#syncBtn');if(!b)return;
+  b.textContent=label;
+  b.dataset.state=label;
+  b.title=authSession?.user?.email?('로그인: '+authSession.user.email):'기기 동기화';
+}
+function friendlyAuthError(j,status){
+  const code=String(j?.error_code||j?.code||'');
+  const msg=String(j?.msg||j?.error_description||j?.message||'').toLowerCase();
+  if(code==='invalid_credentials'||msg.includes('invalid login credentials'))return '이메일 또는 비밀번호가 맞지 않습니다.';
+  if(code==='email_not_confirmed'||msg.includes('email not confirmed'))return '이메일 확인이 아직 완료되지 않았습니다.';
+  if(code==='user_already_exists'||msg.includes('already registered')||msg.includes('already exists'))return '이미 가입된 이메일입니다. 로그인해 주세요.';
+  if(code==='weak_password'||msg.includes('password'))return '비밀번호를 6자 이상으로 입력해 주세요.';
+  if(status===429)return '요청이 많습니다. 잠시 후 다시 시도해 주세요.';
+  return j?.msg||j?.error_description||j?.message||'처리 중 오류가 발생했습니다.';
+}
 function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length)}
 async function cloudRead(){
   if(!await ensureSession())return null;
@@ -65,18 +80,18 @@ async function syncNow(first=false){
       if(remote.updated_at&&remote.updated_at!==last){state=remote.state||state;localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(SERVER_KEY,remote.updated_at);data=buildData();render()}
       setSyncButton('동기화됨');
     }
-  }catch(e){setSyncButton('동기화 오류')}
+  }catch(e){setSyncButton('동기화 오류');console.warn('sync error',e)}
 }
 function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow(false),500)}
 function markDirty(){localStorage.setItem(DIRTY_KEY,'1');setSyncButton(authSession?'동기화 대기':'동기화');if(authSession&&navigator.onLine)scheduleSync()}
 async function signIn(email,password){
   const r=await authFetch('/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});
-  const j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'로그인 실패');
+  const j=await r.json();if(!r.ok)throw new Error(friendlyAuthError(j,r.status));
   authSession={...j,user:j.user};localStorage.setItem(AUTH_KEY,JSON.stringify(authSession));await syncNow(true);return j;
 }
 async function signUp(email,password){
   const r=await authFetch('/signup',{method:'POST',body:JSON.stringify({email,password})});
-  const j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'가입 실패');
+  const j=await r.json();if(!r.ok)throw new Error(friendlyAuthError(j,r.status));
   if(j.access_token){authSession={...j,user:j.user};localStorage.setItem(AUTH_KEY,JSON.stringify(authSession));await syncNow(true)}
   return j;
 }
@@ -84,14 +99,17 @@ function signOut(){authSession=null;localStorage.removeItem(AUTH_KEY);setSyncBut
 function openSyncDialog(){
   let d=$('#syncDialog');if(!d){d=document.createElement('dialog');d.id='syncDialog';document.body.appendChild(d)}
   if(authSession?.user){
-    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p>'+esc(authSession.user.email||'로그인됨')+'</p><div class="authMessage authOk">폴드7 · 아이패드 · PC에서 같은 계정으로 로그인하면 추가·수정·삭제·즐겨찾기가 동기화됩니다. 오프라인에서 변경한 내용은 인터넷 연결 후 올라갑니다.</div><div class="authRow"><button id="syncNowBtn">지금 동기화</button><button id="logoutBtn" class="ghost">로그아웃</button></div><button id="syncClose" class="ghost">닫기</button></div>';
+    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p><b>로그인됨</b><br>'+esc(authSession.user.email||'')+'</p><div class="authMessage authOk">이 계정으로 폴드7 · 아이패드 · PC에서 로그인하면 추가·수정·삭제·즐겨찾기가 동기화됩니다. 오프라인에서 수정한 내용은 인터넷 연결 후 자동으로 올라갑니다.</div><div class="authRow"><button id="syncNowBtn">지금 동기화</button><button id="logoutBtn" class="ghost">로그아웃</button></div><button id="syncClose" class="ghost">닫기</button></div>';
     d.querySelector('#syncNowBtn').onclick=async()=>{await syncNow(false);d.close()};
     d.querySelector('#logoutBtn').onclick=()=>{signOut();d.close()};
   }else{
-    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p>같은 이메일과 비밀번호로 로그인하면 폴드7 · 아이패드 · PC의 개인 자료가 함께 저장됩니다.</p><div class="authGrid"><input id="authEmail" type="email" placeholder="이메일"><input id="authPw" type="password" minlength="6" placeholder="비밀번호 (6자 이상)"></div><div id="authMsg" class="authMessage" hidden></div><div class="authRow"><button id="loginBtn">로그인</button><button id="signupBtn" class="ghost">처음 가입</button></div><button id="syncClose" class="ghost">닫기</button></div>';
+    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p>폴드7 · 아이패드 · PC에서 <b>같은 이메일과 비밀번호</b>로 로그인하면 개인 자료가 함께 저장됩니다.</p><div class="authGrid"><input id="authEmail" type="email" autocomplete="email" placeholder="이메일"><div class="passwordRow"><input id="authPw" type="password" minlength="6" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"><button type="button" id="pwToggle" class="ghost smallBtn">보기</button></div></div><div id="authMsg" class="authMessage" hidden></div><div class="authRow"><button id="loginBtn">로그인</button><button id="signupBtn" class="ghost">처음 가입</button></div><div class="authHint">처음 가입한 뒤에는 받은 확인 메일을 열어 인증하고, 다시 이 화면에서 로그인하세요.</div><button id="syncClose" class="ghost">닫기</button></div>';
     const msg=(t,err=false)=>{const m=d.querySelector('#authMsg');m.hidden=false;m.textContent=t;m.className='authMessage '+(err?'authErr':'authOk')};
-    d.querySelector('#loginBtn').onclick=async()=>{try{await signIn(d.querySelector('#authEmail').value.trim(),d.querySelector('#authPw').value);d.close()}catch(e){msg(e.message,true)}};
-    d.querySelector('#signupBtn').onclick=async()=>{try{const j=await signUp(d.querySelector('#authEmail').value.trim(),d.querySelector('#authPw').value);if(j.access_token)d.close();else msg('가입 확인 메일을 보냈습니다. 메일에서 확인한 뒤 이 화면에서 로그인해 주세요.')}catch(e){msg(e.message,true)}};
+    const email=()=>d.querySelector('#authEmail').value.trim();
+    const pw=()=>d.querySelector('#authPw').value;
+    d.querySelector('#pwToggle').onclick=()=>{const p=d.querySelector('#authPw');const show=p.type==='password';p.type=show?'text':'password';d.querySelector('#pwToggle').textContent=show?'숨기기':'보기'};
+    d.querySelector('#loginBtn').onclick=async()=>{if(!email()||!pw())return msg('이메일과 비밀번호를 입력해 주세요.',true);try{msg('로그인 확인 중…');await signIn(email(),pw());d.close()}catch(e){msg(e.message,true)}};
+    d.querySelector('#signupBtn').onclick=async()=>{if(!email()||pw().length<6)return msg('사용 가능한 이메일과 6자 이상의 비밀번호를 입력해 주세요.',true);try{msg('가입 처리 중…');const j=await signUp(email(),pw());if(j.access_token)d.close();else msg('가입 확인 메일을 보냈습니다. 메일에서 확인한 뒤 이 화면에서 로그인해 주세요.')}catch(e){msg(e.message,true)}};
   }
   d.querySelector('#syncClose').onclick=()=>d.close();d.showModal();
 }
@@ -260,7 +278,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=27',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v27').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=28',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v28').map(k=>caches.delete(k))))}
 render();
-if(authSession){setSyncButton('동기화 대기');syncNow(true)}
+if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
