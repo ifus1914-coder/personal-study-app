@@ -5,6 +5,99 @@ const STATE_KEY='personalStudyStateV2';
 const OLD_KEY='personalStudyDataV1';
 const CATS=['봉사모임','봉사서론','개인연구','집회준비','즐겨찾기'];
 const $=s=>document.querySelector(s);
+
+const SUPABASE_URL='https://rhphbkduummnientfgmp.supabase.co';
+const SUPABASE_KEY='sb_publishable_fIylxaS2q2Na0X7iycwzTQ_G3E2bf4C';
+const AUTH_KEY='personalStudyAuthV1';
+const DIRTY_KEY='personalStudySyncDirtyV1';
+const SERVER_KEY='personalStudyServerUpdatedAtV1';
+let authSession=(()=>{try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch{return null}})();
+let syncTimer=null;
+
+function authHeaders(token){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(token||SUPABASE_KEY),'Content-Type':'application/json'}}
+async function authFetch(path,opts={}){return fetch(SUPABASE_URL+'/auth/v1'+path,{...opts,headers:{...authHeaders(),...(opts.headers||{})}})}
+async function refreshSession(){
+  if(!authSession?.refresh_token)return false;
+  try{
+    const r=await authFetch('/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:authSession.refresh_token})});
+    if(!r.ok)return false;
+    const j=await r.json();authSession={...j,user:j.user};localStorage.setItem(AUTH_KEY,JSON.stringify(authSession));return true;
+  }catch{return false}
+}
+async function ensureSession(){
+  if(!authSession)return false;
+  const exp=(authSession.expires_at||0)*1000;
+  if(exp&&Date.now()>exp-60000)return refreshSession();
+  return true;
+}
+function setSyncButton(label){const b=$('#syncBtn');if(b)b.textContent=label}
+function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length)}
+async function cloudRead(){
+  if(!await ensureSession())return null;
+  const uid=authSession?.user?.id;if(!uid)return null;
+  const r=await fetch(SUPABASE_URL+'/rest/v1/user_state?select=state,updated_at&user_id=eq.'+encodeURIComponent(uid),{headers:authHeaders(authSession.access_token)});
+  if(!r.ok)throw new Error('read '+r.status);
+  const rows=await r.json();return rows[0]||null;
+}
+async function cloudWrite(){
+  if(!navigator.onLine||!await ensureSession())return false;
+  const uid=authSession?.user?.id;if(!uid)return false;
+  const now=new Date().toISOString();
+  const r=await fetch(SUPABASE_URL+'/rest/v1/user_state?on_conflict=user_id',{method:'POST',headers:{...authHeaders(authSession.access_token),'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({user_id:uid,state,updated_at:now})});
+  if(!r.ok)throw new Error('write '+r.status);
+  const rows=await r.json();const t=rows?.[0]?.updated_at||now;
+  localStorage.setItem(DIRTY_KEY,'0');localStorage.setItem(SERVER_KEY,t);setSyncButton('동기화됨');return true;
+}
+async function syncNow(first=false){
+  if(!authSession||!navigator.onLine)return;
+  setSyncButton('동기화 중…');
+  try{
+    const remote=await cloudRead();
+    const dirty=localStorage.getItem(DIRTY_KEY)==='1';
+    if(!remote){
+      await cloudWrite();
+    }else if(first&&isStateEmpty(state)){
+      state=remote.state||state;localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(DIRTY_KEY,'0');localStorage.setItem(SERVER_KEY,remote.updated_at||'');data=buildData();render();
+if(authSession){setSyncButton('동기화 대기');syncNow(true)}
+window.addEventListener('online',()=>{if(authSession)syncNow(false)});setSyncButton('동기화됨');
+    }else if(dirty){
+      await cloudWrite();
+    }else{
+      const last=localStorage.getItem(SERVER_KEY)||'';
+      if(remote.updated_at&&remote.updated_at!==last){state=remote.state||state;localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(SERVER_KEY,remote.updated_at);data=buildData();render()}
+      setSyncButton('동기화됨');
+    }
+  }catch(e){setSyncButton('동기화 오류')}
+}
+function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow(false),500)}
+function markDirty(){localStorage.setItem(DIRTY_KEY,'1');setSyncButton(authSession?'동기화 대기':'동기화');if(authSession&&navigator.onLine)scheduleSync()}
+async function signIn(email,password){
+  const r=await authFetch('/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});
+  const j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'로그인 실패');
+  authSession={...j,user:j.user};localStorage.setItem(AUTH_KEY,JSON.stringify(authSession));await syncNow(true);return j;
+}
+async function signUp(email,password){
+  const r=await authFetch('/signup',{method:'POST',body:JSON.stringify({email,password})});
+  const j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'가입 실패');
+  if(j.access_token){authSession={...j,user:j.user};localStorage.setItem(AUTH_KEY,JSON.stringify(authSession));await syncNow(true)}
+  return j;
+}
+function signOut(){authSession=null;localStorage.removeItem(AUTH_KEY);setSyncButton('동기화')}
+function openSyncDialog(){
+  let d=$('#syncDialog');if(!d){d=document.createElement('dialog');d.id='syncDialog';document.body.appendChild(d)}
+  if(authSession?.user){
+    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p>'+esc(authSession.user.email||'로그인됨')+'</p><div class="authMessage authOk">폴드7 · 아이패드 · PC에서 같은 계정으로 로그인하면 추가·수정·삭제·즐겨찾기가 동기화됩니다. 오프라인에서 변경한 내용은 인터넷 연결 후 올라갑니다.</div><div class="authRow"><button id="syncNowBtn">지금 동기화</button><button id="logoutBtn" class="ghost">로그아웃</button></div><button id="syncClose" class="ghost">닫기</button></div>';
+    d.querySelector('#syncNowBtn').onclick=async()=>{await syncNow(false);d.close()};
+    d.querySelector('#logoutBtn').onclick=()=>{signOut();d.close()};
+  }else{
+    d.innerHTML='<div class="authWrap"><h2>기기 동기화</h2><p>같은 이메일과 비밀번호로 로그인하면 폴드7 · 아이패드 · PC의 개인 자료가 함께 저장됩니다.</p><div class="authGrid"><input id="authEmail" type="email" placeholder="이메일"><input id="authPw" type="password" minlength="6" placeholder="비밀번호 (6자 이상)"></div><div id="authMsg" class="authMessage" hidden></div><div class="authRow"><button id="loginBtn">로그인</button><button id="signupBtn" class="ghost">처음 가입</button></div><button id="syncClose" class="ghost">닫기</button></div>';
+    const msg=(t,err=false)=>{const m=d.querySelector('#authMsg');m.hidden=false;m.textContent=t;m.className='authMessage '+(err?'authErr':'authOk')};
+    d.querySelector('#loginBtn').onclick=async()=>{try{await signIn(d.querySelector('#authEmail').value.trim(),d.querySelector('#authPw').value);d.close()}catch(e){msg(e.message,true)}};
+    d.querySelector('#signupBtn').onclick=async()=>{try{const j=await signUp(d.querySelector('#authEmail').value.trim(),d.querySelector('#authPw').value);if(j.access_token)d.close();else msg('가입 확인 메일을 보냈습니다. 메일에서 확인한 뒤 이 화면에서 로그인해 주세요.')}catch(e){msg(e.message,true)}};
+  }
+  d.querySelector('#syncClose').onclick=()=>d.close();d.showModal();
+}
+
 const esc=(s='')=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const BIBLE_BOOKS={
@@ -91,6 +184,7 @@ let data=buildData(),tab='개인연구',sub='전체',editId=null;
 function persist(){
   localStorage.setItem(STATE_KEY,JSON.stringify(state));
   data=buildData();
+  markDirty();
 }
 function formatContent(v){
   const s=String(v||'').replace(/\\n/g,'\n');
@@ -147,6 +241,7 @@ document.addEventListener('click',e=>{
 });
 $('#search').addEventListener('input',render);
 $('#addBtn').onclick=()=>openEditor();
+$('#syncBtn').onclick=openSyncDialog;
 $('#cancel').onclick=()=>$('#editor').close();
 $('#form').onsubmit=e=>{
   e.preventDefault();
