@@ -4,3 +4,5 @@
 @media(max-width:560px){.headerBtns{gap:5px}.headerBtns button{padding:9px 10px;font-size:13px}}
 
 .passwordRow{display:grid;grid-template-columns:1fr auto;gap:8px}.passwordRow input{min-width:0}.smallBtn{padding:10px 12px;white-space:nowrap}.authHint{font-size:12px;color:#777;line-height:1.45}.authMessage:not([hidden]){display:block}#syncBtn[data-state="동기화됨"],#syncBtn[data-state="로그인됨"]{font-weight:800}#syncBtn[data-state="동기화 오류"]{border-color:#b76a62;color:#8b3c35}
+.toolbarBtns{display:flex;gap:8px}.categoryManage{min-width:min(520px,90vw)}.catAdd{display:grid;grid-template-columns:1fr auto;gap:8px}.catList,.hiddenCats{display:grid;gap:7px}.hiddenCats{margin-top:6px;padding-top:10px;border-top:1px solid #e3dfd6}.catRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;background:#f7f5ef;border-radius:10px}.catRow span{font-weight:700}.catRow button{padding:7px 10px;font-size:12px}
+@media(max-width:560px){.toolbarBtns{display:grid;grid-template-columns:1fr 1fr}.toolbarBtns button{width:100%}.catAdd{grid-template-columns:1fr}.categoryManage{min-width:0}}
