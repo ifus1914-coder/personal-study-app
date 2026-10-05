@@ -309,7 +309,7 @@ function openCategoryManager(){
   d.querySelector('#newCategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#categoryAddBtn').click()}});
   d.querySelectorAll('[data-cat-action]').forEach(b=>b.onclick=()=>{const n=b.dataset.catName;if(b.dataset.catAction==='restore')restoreCategory(n);else deleteCategory(n)});
   d.querySelector('#categoryClose').onclick=()=>d.close();
-  d.showModal();
+  if(!d.open)d.showModal();
 }
 
 document.addEventListener('click',e=>{
