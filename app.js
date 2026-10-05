@@ -54,7 +54,7 @@ function openDetail(x){
   if(!x)return;
   let d=$('#detail');
   if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}
-  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(x.source)+'">공식 자료 열기 ↗</a></p>':'')+'</div>';
+  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+esc(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(x.source)+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
   d.querySelector('.detailClose').onclick=()=>d.close();
   d.showModal();
 }
