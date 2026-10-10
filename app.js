@@ -344,7 +344,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=29',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v29').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=30',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v30').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
