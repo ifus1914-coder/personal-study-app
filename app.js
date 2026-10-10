@@ -47,7 +47,7 @@ function friendlyAuthError(j,status){
   if(status===429)return '요청이 많습니다. 잠시 후 다시 시도해 주세요.';
   return j?.msg||j?.error_description||j?.message||'처리 중 오류가 발생했습니다.';
 }
-function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length||s.categories?.length||s.hiddenCategories?.length)}
+function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length||s.categories?.length||s.hiddenCategories?.length||Object.keys(s.subcategories||{}).length)}
 async function cloudRead(){
   if(!await ensureSession())return null;
   const uid=authSession?.user?.id;if(!uid)return null;
@@ -177,7 +177,7 @@ function scriptureHtml(ref){
 
 
 function loadState(){
-  let st={custom:[],overrides:{},deleted:[],favorites:{},categories:[],hiddenCategories:[]};
+  let st={custom:[],overrides:{},deleted:[],favorites:{},categories:[],hiddenCategories:[],subcategories:{}};
   try{Object.assign(st,JSON.parse(localStorage.getItem(STATE_KEY)||'{}'))}catch{}
   st.custom=Array.isArray(st.custom)?st.custom:[];
   st.overrides=st.overrides||{};
@@ -185,6 +185,7 @@ function loadState(){
   st.favorites=st.favorites||{};
   st.categories=Array.isArray(st.categories)?st.categories:[];
   st.hiddenCategories=Array.isArray(st.hiddenCategories)?st.hiddenCategories:[];
+  st.subcategories=(st.subcategories&&typeof st.subcategories==='object'&&!Array.isArray(st.subcategories))?st.subcategories:{};
   if(!localStorage.getItem(STATE_KEY)){
     try{
       const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
@@ -204,6 +205,16 @@ function getCategories(includeHidden=false){
   return [...new Set([...base,...custom]),FAVORITES_CAT];
 }
 function categoryExists(name){return getCategories(true).includes(name)}
+function getSubcategories(category){
+  const fromData=data.filter(x=>x.category===category).map(x=>x.subcategory).filter(Boolean);
+  const saved=Array.isArray(state.subcategories?.[category])?state.subcategories[category]:[];
+  return [...new Set([...saved,...fromData])];
+}
+function ensureSubcategoryStore(category){
+  state.subcategories=state.subcategories||{};
+  if(!Array.isArray(state.subcategories[category]))state.subcategories[category]=[];
+  return state.subcategories[category];
+}
 function buildData(){
   const deleted=new Set(state.deleted||[]);
   const built=SEED.filter(x=>!deleted.has(x.id)).map(s=>({...s,...(state.overrides?.[s.id]||{}),favorite:!!state.favorites?.[s.id]}));
@@ -229,9 +240,9 @@ function render(){
   if(!cats.includes(tab))tab=cats.find(x=>x!==FAVORITES_CAT)||FAVORITES_CAT;
   $('#tabs').innerHTML=cats.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+esc(c)+'">'+esc(c)+'</button>').join('');
   let base=tab===FAVORITES_CAT?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);
-  const subs=['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))];
+  const subs=tab===FAVORITES_CAT?['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))]:['전체',...getSubcategories(tab)];
   if(!subs.includes(sub))sub='전체';
-  $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+s+'">'+s+'</button>').join('');
+  $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+esc(s)+'">'+esc(s)+'</button>').join('')+(tab!==FAVORITES_CAT?'<button class="chip manageChip" data-manage-subcats="1">⚙ 소제목 관리</button>':'');
   const q=$('#search').value.trim().toLowerCase();
   const rows=base.filter(x=>(sub==='전체'||x.subcategory===sub)&&(!q||[x.title,x.scripture,x.content,x.application,(x.keywords||[]).join(' ')].join(' ').toLowerCase().includes(q)));
   $('#list').innerHTML=rows.length?rows.map(card).join(''):'<div class="empty">해당 자료가 없습니다.<br>＋ 새 자료로 직접 추가할 수 있습니다.</div>';
@@ -262,6 +273,86 @@ function removeItem(id){
   if(BUILTIN.has(id)){if(!state.deleted.includes(id))state.deleted.push(id);delete state.overrides[id];delete state.favorites[id]}
   else state.custom=state.custom.filter(x=>x.id!==id);
   persist();render();
+}
+
+
+function addSubcategory(category,name){
+  name=String(name||'').trim();
+  if(!name)return '소제목 이름을 입력해 주세요.';
+  if(name==='전체')return '“전체”는 사용할 수 없는 이름입니다.';
+  if(getSubcategories(category).includes(name))return '이미 있는 소제목입니다.';
+  ensureSubcategoryStore(category).push(name);
+  persist();sub=name;render();return '';
+}
+function renameSubcategory(category,oldName,newName){
+  newName=String(newName||'').trim();
+  if(!newName)return '새 소제목 이름을 입력해 주세요.';
+  if(newName==='전체')return '“전체”는 사용할 수 없는 이름입니다.';
+  if(newName!==oldName&&getSubcategories(category).includes(newName))return '이미 있는 소제목입니다.';
+  if(newName===oldName)return '';
+
+  const matches=data.filter(x=>x.category===category&&x.subcategory===oldName);
+  for(const x of matches){
+    if(BUILTIN.has(x.id))state.overrides[x.id]={...(state.overrides[x.id]||{}),subcategory:newName};
+    else{
+      const item=state.custom.find(v=>v.id===x.id);
+      if(item)item.subcategory=newName;
+    }
+  }
+
+  const list=ensureSubcategoryStore(category);
+  const i=list.indexOf(oldName);
+  if(i>=0)list[i]=newName; else if(!list.includes(newName))list.push(newName);
+  state.subcategories[category]=[...new Set(list.filter(Boolean))];
+
+  if(sub===oldName)sub=newName;
+  persist();render();return '';
+}
+function deleteSubcategory(category,name){
+  const matches=data.filter(x=>x.category===category&&x.subcategory===name);
+  const count=matches.length;
+  const message=count
+    ? '“'+name+'” 소제목을 삭제할까요?\n그 안의 자료 '+count+'개는 삭제하지 않고 “미분류”로 이동합니다.'
+    : '“'+name+'” 소제목을 삭제할까요?';
+  if(!confirm(message))return;
+
+  if(count){
+    for(const x of matches){
+      if(BUILTIN.has(x.id))state.overrides[x.id]={...(state.overrides[x.id]||{}),subcategory:'미분류'};
+      else{
+        const item=state.custom.find(v=>v.id===x.id);
+        if(item)item.subcategory='미분류';
+      }
+    }
+    const list=ensureSubcategoryStore(category);
+    if(!list.includes('미분류'))list.push('미분류');
+  }
+
+  const list=ensureSubcategoryStore(category);
+  state.subcategories[category]=list.filter(x=>x!==name);
+  if(sub===name)sub='전체';
+  persist();render();openSubcategoryManager();
+}
+function openSubcategoryManager(){
+  if(tab===FAVORITES_CAT)return;
+  const category=tab;
+  let d=$('#subcategoryManager');
+  if(!d){d=document.createElement('dialog');d.id='subcategoryManager';document.body.appendChild(d)}
+  const items=getSubcategories(category);
+  const row=name=>'<div class="catRow"><span>'+esc(name)+'</span><div class="miniActions"><button type="button" class="ghost" data-sub-rename="'+esc(name)+'">이름 변경</button><button type="button" class="danger" data-sub-delete="'+esc(name)+'">삭제</button></div></div>';
+  d.innerHTML='<div class="authWrap categoryManage"><h2>소제목 관리</h2><p><b>'+esc(category)+'</b> 안의 소제목을 추가하거나 이름을 바꿀 수 있습니다.</p><div class="catAdd"><input id="newSubcategoryName" placeholder="새 소제목 이름"><button id="subcategoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+(items.length?items.map(row).join(''):'<div class="emptySmall">등록된 소제목이 없습니다.</div>')+'</div><div class="authHint">소제목을 삭제해도 그 안의 자료는 삭제되지 않고 “미분류”로 이동합니다.</div><button id="subcategoryClose" class="ghost" type="button">닫기</button></div>';
+  d.querySelector('#subcategoryAddBtn').onclick=()=>{const input=d.querySelector('#newSubcategoryName');const err=addSubcategory(category,input.value);if(err)alert(err);else openSubcategoryManager()};
+  d.querySelector('#newSubcategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#subcategoryAddBtn').click()}});
+  d.querySelectorAll('[data-sub-rename]').forEach(b=>b.onclick=()=>{
+    const oldName=b.dataset.subRename;
+    const next=prompt('새 소제목 이름을 입력하세요.',oldName);
+    if(next===null)return;
+    const err=renameSubcategory(category,oldName,next);
+    if(err)alert(err); else openSubcategoryManager();
+  });
+  d.querySelectorAll('[data-sub-delete]').forEach(b=>b.onclick=()=>deleteSubcategory(category,b.dataset.subDelete));
+  d.querySelector('#subcategoryClose').onclick=()=>d.close();
+  if(!d.open)d.showModal();
 }
 
 function addCategory(name){
@@ -315,7 +406,8 @@ function openCategoryManager(){
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
   if(!b){const card=e.target.closest('.card');if(card?.dataset.open)openDetail(data.find(v=>v.id===card.dataset.open));return}
-  if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}
+  if(b.dataset.manageSubcats){openSubcategoryManager()}
+  else if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}
   else if(b.dataset.sub){sub=b.dataset.sub;render()}
   else if(b.dataset.fav)setFavorite(b.dataset.fav);
   else if(b.dataset.edit)openEditor(data.find(v=>v.id===b.dataset.edit));
@@ -344,7 +436,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=31',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v31').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=32',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v32').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
