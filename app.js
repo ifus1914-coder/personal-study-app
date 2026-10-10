@@ -255,12 +255,21 @@ function openDetail(x){
   d.querySelector('.detailClose').onclick=()=>d.close();
   d.showModal();
 }
+function populateEditorSubcategories(selected=''){
+  const category=$('#category').value;
+  let subs=getSubcategories(category);
+  if(selected&&!subs.includes(selected))subs=[selected,...subs];
+  if(!subs.length)subs=['미분류'];
+  $('#subcategory').innerHTML='<option value="">소제목 선택</option>'+subs.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('');
+  $('#subcategory').value=selected&&subs.includes(selected)?selected:subs[0];
+}
 function openEditor(x=null){
   editId=x?.id||null;
   $('#formTitle').textContent=x?'자료 수정':'새 자료';
   $('#category').innerHTML=getCategories().filter(c=>c!==FAVORITES_CAT).map(c=>'<option>'+esc(c)+'</option>').join('');
   $('#category').value=x?.category||(tab===FAVORITES_CAT?(getCategories().find(c=>c!==FAVORITES_CAT)||'개인연구'):tab);
-  for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
+  populateEditorSubcategories(x?.subcategory||'');
+  for(const k of ['title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
   $('#keywords').value=(x?.keywords||[]).join(', ');
   $('#editor').showModal();
 }
@@ -418,6 +427,7 @@ $('#addBtn').onclick=()=>openEditor();
 $('#categoryManageBtn').onclick=openCategoryManager;
 $('#syncBtn').onclick=openSyncDialog;
 $('#cancel').onclick=()=>$('#editor').close();
+$('#category').addEventListener('change',()=>populateEditorSubcategories(''));
 $('#form').onsubmit=e=>{
   e.preventDefault();
   const old=data.find(x=>x.id===editId);
@@ -436,7 +446,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=32',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v32').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=33',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v33').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
