@@ -3,7 +3,7 @@ if(window.MINISTRY_SHORT){for(const s of SEED){const p=window.MINISTRY_SHORT[s.i
 const BUILTIN=new Set(SEED.map(x=>x.id));
 const STATE_KEY='personalStudyStateV2';
 const OLD_KEY='personalStudyDataV1';
-const BASE_CATS=['봉사모임','봉사서론','개인연구','집회준비'];
+const BASE_CATS=['봉사모임','봉사서론','양 치는 방문','개인연구','집회준비'];
 const FAVORITES_CAT='즐겨찾기';
 const $=s=>document.querySelector(s);
 
