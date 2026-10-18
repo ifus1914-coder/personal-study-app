@@ -228,9 +228,32 @@ function persist(){
   data=buildData();
   markDirty();
 }
-function formatContent(v){
+function inlineLinks(text){
+  const names=Object.keys(BIBLE_BOOKS).sort((a,b)=>b.length-a.length).map(n=>n.replace(/[.*+?^\x24{}()|[\]\\]/g,'\\function formatContent(v){
   const s=String(v||'').replace(/\\n/g,'\n');
   return s.split(/\n\s*\n/).map(p=>'<p class="para">'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
+}'));
+  const bible=new RegExp('(?:'+names.join('|')+')\\s*\\d{1,3}(?::\\d{1,3}(?:\\s*[-–,]\\s*\\d{1,3})?)?','g');
+  const url=/https?:\\/\\/[^\\s<>"']+/g;
+  const matches=[];
+  for(const m of text.matchAll(url))matches.push({start:m.index,end:m.index+m[0].length,value:m[0],type:'url'});
+  for(const m of text.matchAll(bible))matches.push({start:m.index,end:m.index+m[0].length,value:m[0],type:'bible'});
+  matches.sort((a,b)=>a.start-b.start||b.end-a.end);
+  let out='',pos=0;
+  for(const m of matches){
+    if(m.start<pos)continue;
+    out+=esc(text.slice(pos,m.start));
+    let value=m.value,tail='';
+    if(m.type==='url'){const trimmed=value.replace(/[.,;!?)]*$/,'');tail=value.slice(trimmed.length);value=trimmed;}
+    const href=m.type==='url'?jwLibraryUrl(value):bibleFinder(value);
+    out+=href?'<a class="scriptureLink" target="_blank" rel="noopener noreferrer" href="'+esc(href)+'">'+esc(value)+' ↗</a>':esc(value);
+    out+=esc(tail);pos=m.end;
+  }
+  return out+esc(text.slice(pos));
+}
+function formatContent(v){
+  const s=String(v||'').replace(/\\n/g,'\n');
+  return s.split(/\n\s*\n/).map(p=>'<p class="para">'+inlineLinks(p).replace(/\n/g,'<br>')+'</p>').join('');
 }
 function card(x){
   return '<article class="card compact" data-open="'+x.id+'"><div class="cardTop"><div><div class="meta">'+esc(x.subcategory)+'</div><h3>'+esc(x.title)+'</h3>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'</div><span>'+(x.favorite?'⭐':'')+'</span></div><div class="cardActions"><button class="fav" data-fav="'+x.id+'">'+(x.favorite?'즐겨찾기 해제':'☆ 즐겨찾기')+'</button><button data-edit="'+x.id+'">수정</button><button class="danger" data-del="'+x.id+'">삭제</button></div></article>';
@@ -251,7 +274,7 @@ function openDetail(x){
   if(!x)return;
   let d=$('#detail');
   if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}
-  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(jwLibraryUrl(x.source))+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
+  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+formatContent(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(jwLibraryUrl(x.source))+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
   d.querySelector('.detailClose').onclick=()=>d.close();
   d.showModal();
 }
