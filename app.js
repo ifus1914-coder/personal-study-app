@@ -186,6 +186,15 @@ function loadState(){
   st.categories=Array.isArray(st.categories)?st.categories:[];
   st.hiddenCategories=Array.isArray(st.hiddenCategories)?st.hiddenCategories:[];
   st.subcategories=(st.subcategories&&typeof st.subcategories==='object'&&!Array.isArray(st.subcategories))?st.subcategories:{};
+
+  const recoveryKey='personalStudyRecoveryV36';
+  if(!localStorage.getItem(recoveryKey)){
+    st.deleted=[];
+    st.hiddenCategories=[];
+    localStorage.setItem(recoveryKey,'1');
+    localStorage.setItem(STATE_KEY,JSON.stringify(st));
+  }
+
   if(!localStorage.getItem(STATE_KEY)){
     try{
       const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
@@ -457,10 +466,10 @@ document.addEventListener('click',e=>{
 });
 $('#search').addEventListener('input',render);
 $('#addBtn').onclick=()=>openEditor();
-$('#categoryManageBtn').onclick=openCategoryManager;
-$('#syncBtn').onclick=openSyncDialog;
-$('#cancel').onclick=()=>$('#editor').close();
-$('#category').addEventListener('change',()=>populateEditorSubcategories(''));
+const categoryManageBtn=$('#categoryManageBtn');if(categoryManageBtn)categoryManageBtn.onclick=openCategoryManager;
+const syncBtn=$('#syncBtn');if(syncBtn)syncBtn.onclick=openSyncDialog;
+const cancelBtn=$('#cancel');if(cancelBtn)cancelBtn.onclick=()=>$('#editor').close();
+const categorySelect=$('#category');if(categorySelect)categorySelect.addEventListener('change',()=>populateEditorSubcategories(''));
 $('#form').onsubmit=e=>{
   e.preventDefault();
   const old=data.find(x=>x.id===editId);
@@ -479,7 +488,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=35',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v35').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=36',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v36').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
