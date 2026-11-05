@@ -3,7 +3,7 @@ if(window.MINISTRY_SHORT){for(const s of SEED){const p=window.MINISTRY_SHORT[s.i
 const BUILTIN=new Set(SEED.map(x=>x.id));
 const STATE_KEY='personalStudyStateV2';
 const OLD_KEY='personalStudyDataV1';
-const BASE_CATS=['봉사모임','봉사서론','양 치는 방문','개인연구','집회준비'];
+const BASE_CATS=['봉사모임','봉사서론','개인연구','집회준비'];
 const FAVORITES_CAT='즐겨찾기';
 const $=s=>document.querySelector(s);
 
@@ -47,7 +47,7 @@ function friendlyAuthError(j,status){
   if(status===429)return '요청이 많습니다. 잠시 후 다시 시도해 주세요.';
   return j?.msg||j?.error_description||j?.message||'처리 중 오류가 발생했습니다.';
 }
-function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length||s.categories?.length||s.hiddenCategories?.length||Object.keys(s.subcategories||{}).length)}
+function isStateEmpty(s){return !(s.custom?.length||Object.keys(s.overrides||{}).length||s.deleted?.length||Object.keys(s.favorites||{}).length||s.categories?.length||s.hiddenCategories?.length)}
 async function cloudRead(){
   if(!await ensureSession())return null;
   const uid=authSession?.user?.id;if(!uid)return null;
@@ -177,7 +177,7 @@ function scriptureHtml(ref){
 
 
 function loadState(){
-  let st={custom:[],overrides:{},deleted:[],favorites:{},categories:[],hiddenCategories:[],subcategories:{}};
+  let st={custom:[],overrides:{},deleted:[],favorites:{},categories:[],hiddenCategories:[]};
   try{Object.assign(st,JSON.parse(localStorage.getItem(STATE_KEY)||'{}'))}catch{}
   st.custom=Array.isArray(st.custom)?st.custom:[];
   st.overrides=st.overrides||{};
@@ -185,16 +185,12 @@ function loadState(){
   st.favorites=st.favorites||{};
   st.categories=Array.isArray(st.categories)?st.categories:[];
   st.hiddenCategories=Array.isArray(st.hiddenCategories)?st.hiddenCategories:[];
-  st.subcategories=(st.subcategories&&typeof st.subcategories==='object'&&!Array.isArray(st.subcategories))?st.subcategories:{};
-
-  const recoveryKey='personalStudyRecoveryV36';
-  if(!localStorage.getItem(recoveryKey)){
+  if(!localStorage.getItem('personalStudyRepairV37')){
     st.deleted=[];
     st.hiddenCategories=[];
-    localStorage.setItem(recoveryKey,'1');
+    localStorage.setItem('personalStudyRepairV37','1');
     localStorage.setItem(STATE_KEY,JSON.stringify(st));
   }
-
   if(!localStorage.getItem(STATE_KEY)){
     try{
       const old=JSON.parse(localStorage.getItem(OLD_KEY)||'[]');
@@ -215,16 +211,6 @@ function getCategories(includeHidden=false){
   return [...visible,FAVORITES_CAT];
 }
 function categoryExists(name){return getCategories(true).includes(name)}
-function getSubcategories(category){
-  const fromData=data.filter(x=>x.category===category).map(x=>x.subcategory).filter(Boolean);
-  const saved=Array.isArray(state.subcategories?.[category])?state.subcategories[category]:[];
-  return [...new Set([...saved,...fromData])];
-}
-function ensureSubcategoryStore(category){
-  state.subcategories=state.subcategories||{};
-  if(!Array.isArray(state.subcategories[category]))state.subcategories[category]=[];
-  return state.subcategories[category];
-}
 function buildData(){
   const deleted=new Set(state.deleted||[]);
   const built=SEED.filter(x=>!deleted.has(x.id)).map(s=>({...s,...(state.overrides?.[s.id]||{}),favorite:!!state.favorites?.[s.id]}));
@@ -238,32 +224,9 @@ function persist(){
   data=buildData();
   markDirty();
 }
-function inlineLinks(text){
-  const names=Object.keys(BIBLE_BOOKS).sort((a,b)=>b.length-a.length).map(n=>n.replace(/[.*+?^\x24{}()|[\]\\]/g,'\\function formatContent(v){
-  const s=String(v||'').replace(/\\n/g,'\n');
-  return s.split(/\n\s*\n/).map(p=>'<p class="para">'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
-}'));
-  const bible=new RegExp('(?:'+names.join('|')+')\\s*\\d{1,3}(?::\\d{1,3}(?:\\s*[-–,]\\s*\\d{1,3})?)?','g');
-  const url=/https?:\\/\\/[^\\s<>"']+/g;
-  const matches=[];
-  for(const m of text.matchAll(url))matches.push({start:m.index,end:m.index+m[0].length,value:m[0],type:'url'});
-  for(const m of text.matchAll(bible))matches.push({start:m.index,end:m.index+m[0].length,value:m[0],type:'bible'});
-  matches.sort((a,b)=>a.start-b.start||b.end-a.end);
-  let out='',pos=0;
-  for(const m of matches){
-    if(m.start<pos)continue;
-    out+=esc(text.slice(pos,m.start));
-    let value=m.value,tail='';
-    if(m.type==='url'){const trimmed=value.replace(/[.,;!?)]*$/,'');tail=value.slice(trimmed.length);value=trimmed;}
-    const href=m.type==='url'?jwLibraryUrl(value):bibleFinder(value);
-    out+=href?'<a class="scriptureLink" target="_blank" rel="noopener noreferrer" href="'+esc(href)+'">'+esc(value)+' ↗</a>':esc(value);
-    out+=esc(tail);pos=m.end;
-  }
-  return out+esc(text.slice(pos));
-}
 function formatContent(v){
   const s=String(v||'').replace(/\\n/g,'\n');
-  return s.split(/\n\s*\n/).map(p=>'<p class="para">'+inlineLinks(p).replace(/\n/g,'<br>')+'</p>').join('');
+  return s.split(/\n\s*\n/).map(p=>'<p class="para">'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
 }
 function card(x){
   return '<article class="card compact" data-open="'+x.id+'"><div class="cardTop"><div><div class="meta">'+esc(x.subcategory)+'</div><h3>'+esc(x.title)+'</h3>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'</div><span>'+(x.favorite?'⭐':'')+'</span></div><div class="cardActions"><button class="fav" data-fav="'+x.id+'">'+(x.favorite?'즐겨찾기 해제':'☆ 즐겨찾기')+'</button><button data-edit="'+x.id+'">수정</button><button class="danger" data-del="'+x.id+'">삭제</button></div></article>';
@@ -273,9 +236,9 @@ function render(){
   if(!cats.includes(tab))tab=cats.find(x=>x!==FAVORITES_CAT)||FAVORITES_CAT;
   $('#tabs').innerHTML=cats.map(c=>'<button class="'+(tab===c?'active':'')+'" data-tab="'+esc(c)+'">'+esc(c)+'</button>').join('');
   let base=tab===FAVORITES_CAT?data.filter(x=>x.favorite):data.filter(x=>x.category===tab);
-  const subs=tab===FAVORITES_CAT?['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))]:['전체',...getSubcategories(tab)];
+  const subs=['전체',...new Set(base.map(x=>x.subcategory).filter(Boolean))];
   if(!subs.includes(sub))sub='전체';
-  $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+esc(s)+'">'+esc(s)+'</button>').join('')+(tab!==FAVORITES_CAT?'<button class="chip manageChip" data-manage-subcats="1">⚙ 소제목 관리</button>':'');
+  $('#subcats').innerHTML=subs.map(s=>'<button class="chip '+(sub===s?'active':'')+'" data-sub="'+s+'">'+s+'</button>').join('');
   const q=$('#search').value.trim().toLowerCase();
   const rows=base.filter(x=>(sub==='전체'||x.subcategory===sub)&&(!q||[x.title,x.scripture,x.content,x.application,(x.keywords||[]).join(' ')].join(' ').toLowerCase().includes(q)));
   $('#list').innerHTML=rows.length?rows.map(card).join(''):'<div class="empty">해당 자료가 없습니다.<br>＋ 새 자료로 직접 추가할 수 있습니다.</div>';
@@ -284,25 +247,16 @@ function openDetail(x){
   if(!x)return;
   let d=$('#detail');
   if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}
-  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+formatContent(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(jwLibraryUrl(x.source))+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
+  d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(jwLibraryUrl(x.source))+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
   d.querySelector('.detailClose').onclick=()=>d.close();
   d.showModal();
-}
-function populateEditorSubcategories(selected=''){
-  const category=$('#category').value;
-  let subs=getSubcategories(category);
-  if(selected&&!subs.includes(selected))subs=[selected,...subs];
-  if(!subs.length)subs=['미분류'];
-  $('#subcategory').innerHTML='<option value="">소제목 선택</option>'+subs.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('');
-  $('#subcategory').value=selected&&subs.includes(selected)?selected:subs[0];
 }
 function openEditor(x=null){
   editId=x?.id||null;
   $('#formTitle').textContent=x?'자료 수정':'새 자료';
   $('#category').innerHTML=getCategories().filter(c=>c!==FAVORITES_CAT).map(c=>'<option>'+esc(c)+'</option>').join('');
   $('#category').value=x?.category||(tab===FAVORITES_CAT?(getCategories().find(c=>c!==FAVORITES_CAT)||'개인연구'):tab);
-  populateEditorSubcategories(x?.subcategory||'');
-  for(const k of ['title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
+  for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
   $('#keywords').value=(x?.keywords||[]).join(', ');
   $('#editor').showModal();
 }
@@ -315,86 +269,6 @@ function removeItem(id){
   if(BUILTIN.has(id)){if(!state.deleted.includes(id))state.deleted.push(id);delete state.overrides[id];delete state.favorites[id]}
   else state.custom=state.custom.filter(x=>x.id!==id);
   persist();render();
-}
-
-
-function addSubcategory(category,name){
-  name=String(name||'').trim();
-  if(!name)return '소제목 이름을 입력해 주세요.';
-  if(name==='전체')return '“전체”는 사용할 수 없는 이름입니다.';
-  if(getSubcategories(category).includes(name))return '이미 있는 소제목입니다.';
-  ensureSubcategoryStore(category).push(name);
-  persist();sub=name;render();return '';
-}
-function renameSubcategory(category,oldName,newName){
-  newName=String(newName||'').trim();
-  if(!newName)return '새 소제목 이름을 입력해 주세요.';
-  if(newName==='전체')return '“전체”는 사용할 수 없는 이름입니다.';
-  if(newName!==oldName&&getSubcategories(category).includes(newName))return '이미 있는 소제목입니다.';
-  if(newName===oldName)return '';
-
-  const matches=data.filter(x=>x.category===category&&x.subcategory===oldName);
-  for(const x of matches){
-    if(BUILTIN.has(x.id))state.overrides[x.id]={...(state.overrides[x.id]||{}),subcategory:newName};
-    else{
-      const item=state.custom.find(v=>v.id===x.id);
-      if(item)item.subcategory=newName;
-    }
-  }
-
-  const list=ensureSubcategoryStore(category);
-  const i=list.indexOf(oldName);
-  if(i>=0)list[i]=newName; else if(!list.includes(newName))list.push(newName);
-  state.subcategories[category]=[...new Set(list.filter(Boolean))];
-
-  if(sub===oldName)sub=newName;
-  persist();render();return '';
-}
-function deleteSubcategory(category,name){
-  const matches=data.filter(x=>x.category===category&&x.subcategory===name);
-  const count=matches.length;
-  const message=count
-    ? '“'+name+'” 소제목을 삭제할까요?\n그 안의 자료 '+count+'개는 삭제하지 않고 “미분류”로 이동합니다.'
-    : '“'+name+'” 소제목을 삭제할까요?';
-  if(!confirm(message))return;
-
-  if(count){
-    for(const x of matches){
-      if(BUILTIN.has(x.id))state.overrides[x.id]={...(state.overrides[x.id]||{}),subcategory:'미분류'};
-      else{
-        const item=state.custom.find(v=>v.id===x.id);
-        if(item)item.subcategory='미분류';
-      }
-    }
-    const list=ensureSubcategoryStore(category);
-    if(!list.includes('미분류'))list.push('미분류');
-  }
-
-  const list=ensureSubcategoryStore(category);
-  state.subcategories[category]=list.filter(x=>x!==name);
-  if(sub===name)sub='전체';
-  persist();render();openSubcategoryManager();
-}
-function openSubcategoryManager(){
-  if(tab===FAVORITES_CAT)return;
-  const category=tab;
-  let d=$('#subcategoryManager');
-  if(!d){d=document.createElement('dialog');d.id='subcategoryManager';document.body.appendChild(d)}
-  const items=getSubcategories(category);
-  const row=name=>'<div class="catRow"><span>'+esc(name)+'</span><div class="miniActions"><button type="button" class="ghost" data-sub-rename="'+esc(name)+'">이름 변경</button><button type="button" class="danger" data-sub-delete="'+esc(name)+'">삭제</button></div></div>';
-  d.innerHTML='<div class="authWrap categoryManage"><h2>소제목 관리</h2><p><b>'+esc(category)+'</b> 안의 소제목을 추가하거나 이름을 바꿀 수 있습니다.</p><div class="catAdd"><input id="newSubcategoryName" placeholder="새 소제목 이름"><button id="subcategoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+(items.length?items.map(row).join(''):'<div class="emptySmall">등록된 소제목이 없습니다.</div>')+'</div><div class="authHint">소제목을 삭제해도 그 안의 자료는 삭제되지 않고 “미분류”로 이동합니다.</div><button id="subcategoryClose" class="ghost" type="button">닫기</button></div>';
-  d.querySelector('#subcategoryAddBtn').onclick=()=>{const input=d.querySelector('#newSubcategoryName');const err=addSubcategory(category,input.value);if(err)alert(err);else openSubcategoryManager()};
-  d.querySelector('#newSubcategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#subcategoryAddBtn').click()}});
-  d.querySelectorAll('[data-sub-rename]').forEach(b=>b.onclick=()=>{
-    const oldName=b.dataset.subRename;
-    const next=prompt('새 소제목 이름을 입력하세요.',oldName);
-    if(next===null)return;
-    const err=renameSubcategory(category,oldName,next);
-    if(err)alert(err); else openSubcategoryManager();
-  });
-  d.querySelectorAll('[data-sub-delete]').forEach(b=>b.onclick=()=>deleteSubcategory(category,b.dataset.subDelete));
-  d.querySelector('#subcategoryClose').onclick=()=>d.close();
-  if(!d.open)d.showModal();
 }
 
 function addCategory(name){
@@ -430,14 +304,6 @@ function restoreCategory(name){
   state.hiddenCategories=state.hiddenCategories.filter(x=>x!==name);
   persist();render();openCategoryManager();
 }
-function restoreBuiltInData(){
-  if(!confirm('숨겨졌거나 삭제 표시된 기본 자료를 다시 모두 표시할까요?\n직접 추가한 자료는 그대로 유지됩니다.'))return;
-  state.deleted=[];
-  state.hiddenCategories=[];
-  persist();
-  tab='개인연구';sub='전체';render();
-  alert('기본 자료를 다시 표시했습니다.');
-}
 function openCategoryManager(){
   let d=$('#categoryManager');if(!d){d=document.createElement('dialog');d.id='categoryManager';document.body.appendChild(d)}
   const hidden=new Set(state.hiddenCategories||[]);
@@ -445,11 +311,10 @@ function openCategoryManager(){
   const hiddenBase=BASE_CATS.filter(x=>hidden.has(x));
   const custom=state.categories||[];
   const row=(name,type)=>'<div class="catRow"><span>'+esc(name)+'</span><button type="button" class="'+(type==='restore'?'ghost':'danger')+'" data-cat-action="'+type+'" data-cat-name="'+esc(name)+'">'+(type==='restore'?'다시 표시':'삭제')+'</button></div>';
-  d.innerHTML='<div class="authWrap categoryManage"><h2>대주제 관리</h2><p>새 대주제를 추가하거나 필요 없는 대주제를 정리할 수 있습니다.</p><div class="catAdd"><input id="newCategoryName" placeholder="새 대주제 이름"><button id="categoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+visibleBase.map(x=>row(x,'delete')).join('')+custom.map(x=>row(x,'delete')).join('')+'</div>'+(hiddenBase.length?'<div class="hiddenCats"><b>숨긴 기본 대주제</b>'+hiddenBase.map(x=>row(x,'restore')).join('')+'</div>':'')+'<button id="restoreBuiltInBtn" class="ghost" type="button">기본자료 다시 표시</button><button id="categoryClose" class="ghost" type="button">닫기</button></div>';
+  d.innerHTML='<div class="authWrap categoryManage"><h2>대주제 관리</h2><p>새 대주제를 추가하거나 필요 없는 대주제를 정리할 수 있습니다.</p><div class="catAdd"><input id="newCategoryName" placeholder="새 대주제 이름"><button id="categoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+visibleBase.map(x=>row(x,'delete')).join('')+custom.map(x=>row(x,'delete')).join('')+'</div>'+(hiddenBase.length?'<div class="hiddenCats"><b>숨긴 기본 대주제</b>'+hiddenBase.map(x=>row(x,'restore')).join('')+'</div>':'')+'<button id="categoryClose" class="ghost" type="button">닫기</button></div>';
   d.querySelector('#categoryAddBtn').onclick=()=>{const input=d.querySelector('#newCategoryName');const err=addCategory(input.value);if(err)alert(err);else openCategoryManager()};
   d.querySelector('#newCategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#categoryAddBtn').click()}});
   d.querySelectorAll('[data-cat-action]').forEach(b=>b.onclick=()=>{const n=b.dataset.catName;if(b.dataset.catAction==='restore')restoreCategory(n);else deleteCategory(n)});
-  const rb=d.querySelector('#restoreBuiltInBtn');if(rb)rb.onclick=()=>{restoreBuiltInData();d.close()};
   d.querySelector('#categoryClose').onclick=()=>d.close();
   if(!d.open)d.showModal();
 }
@@ -457,8 +322,7 @@ function openCategoryManager(){
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');
   if(!b){const card=e.target.closest('.card');if(card?.dataset.open)openDetail(data.find(v=>v.id===card.dataset.open));return}
-  if(b.dataset.manageSubcats){openSubcategoryManager()}
-  else if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}
+  if(b.dataset.tab){tab=b.dataset.tab;sub='전체';render()}
   else if(b.dataset.sub){sub=b.dataset.sub;render()}
   else if(b.dataset.fav)setFavorite(b.dataset.fav);
   else if(b.dataset.edit)openEditor(data.find(v=>v.id===b.dataset.edit));
@@ -466,10 +330,9 @@ document.addEventListener('click',e=>{
 });
 $('#search').addEventListener('input',render);
 $('#addBtn').onclick=()=>openEditor();
-const categoryManageBtn=$('#categoryManageBtn');if(categoryManageBtn)categoryManageBtn.onclick=openCategoryManager;
-const syncBtn=$('#syncBtn');if(syncBtn)syncBtn.onclick=openSyncDialog;
-const cancelBtn=$('#cancel');if(cancelBtn)cancelBtn.onclick=()=>$('#editor').close();
-const categorySelect=$('#category');if(categorySelect)categorySelect.addEventListener('change',()=>populateEditorSubcategories(''));
+$('#categoryManageBtn').onclick=openCategoryManager;
+$('#syncBtn').onclick=openSyncDialog;
+$('#cancel').onclick=()=>$('#editor').close();
 $('#form').onsubmit=e=>{
   e.preventDefault();
   const old=data.find(x=>x.id===editId);
@@ -488,7 +351,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=36',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v36').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=37',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v37').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
