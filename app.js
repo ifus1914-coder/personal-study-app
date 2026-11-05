@@ -200,9 +200,10 @@ function loadState(){
 let state=loadState();
 function getCategories(includeHidden=false){
   const hidden=new Set(state.hiddenCategories||[]);
-  const base=includeHidden?BASE_CATS:BASE_CATS.filter(x=>!hidden.has(x));
-  const custom=[...(state.categories||[])].filter(x=>x&&x!==FAVORITES_CAT);
-  return [...new Set([...base,...custom]),FAVORITES_CAT];
+  const seeded=[...new Set(SEED.map(x=>x.category).filter(Boolean))];
+  const all=[...new Set([...BASE_CATS,...seeded,...(state.categories||[])])].filter(x=>x&&x!==FAVORITES_CAT);
+  const visible=includeHidden?all:all.filter(x=>!hidden.has(x));
+  return [...visible,FAVORITES_CAT];
 }
 function categoryExists(name){return getCategories(true).includes(name)}
 function getSubcategories(category){
@@ -420,6 +421,14 @@ function restoreCategory(name){
   state.hiddenCategories=state.hiddenCategories.filter(x=>x!==name);
   persist();render();openCategoryManager();
 }
+function restoreBuiltInData(){
+  if(!confirm('숨겨졌거나 삭제 표시된 기본 자료를 다시 모두 표시할까요?\n직접 추가한 자료는 그대로 유지됩니다.'))return;
+  state.deleted=[];
+  state.hiddenCategories=[];
+  persist();
+  tab='개인연구';sub='전체';render();
+  alert('기본 자료를 다시 표시했습니다.');
+}
 function openCategoryManager(){
   let d=$('#categoryManager');if(!d){d=document.createElement('dialog');d.id='categoryManager';document.body.appendChild(d)}
   const hidden=new Set(state.hiddenCategories||[]);
@@ -427,10 +436,11 @@ function openCategoryManager(){
   const hiddenBase=BASE_CATS.filter(x=>hidden.has(x));
   const custom=state.categories||[];
   const row=(name,type)=>'<div class="catRow"><span>'+esc(name)+'</span><button type="button" class="'+(type==='restore'?'ghost':'danger')+'" data-cat-action="'+type+'" data-cat-name="'+esc(name)+'">'+(type==='restore'?'다시 표시':'삭제')+'</button></div>';
-  d.innerHTML='<div class="authWrap categoryManage"><h2>대주제 관리</h2><p>새 대주제를 추가하거나 필요 없는 대주제를 정리할 수 있습니다.</p><div class="catAdd"><input id="newCategoryName" placeholder="새 대주제 이름"><button id="categoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+visibleBase.map(x=>row(x,'delete')).join('')+custom.map(x=>row(x,'delete')).join('')+'</div>'+(hiddenBase.length?'<div class="hiddenCats"><b>숨긴 기본 대주제</b>'+hiddenBase.map(x=>row(x,'restore')).join('')+'</div>':'')+'<button id="categoryClose" class="ghost" type="button">닫기</button></div>';
+  d.innerHTML='<div class="authWrap categoryManage"><h2>대주제 관리</h2><p>새 대주제를 추가하거나 필요 없는 대주제를 정리할 수 있습니다.</p><div class="catAdd"><input id="newCategoryName" placeholder="새 대주제 이름"><button id="categoryAddBtn" type="button">＋ 추가</button></div><div class="catList">'+visibleBase.map(x=>row(x,'delete')).join('')+custom.map(x=>row(x,'delete')).join('')+'</div>'+(hiddenBase.length?'<div class="hiddenCats"><b>숨긴 기본 대주제</b>'+hiddenBase.map(x=>row(x,'restore')).join('')+'</div>':'')+'<button id="restoreBuiltInBtn" class="ghost" type="button">기본자료 다시 표시</button><button id="categoryClose" class="ghost" type="button">닫기</button></div>';
   d.querySelector('#categoryAddBtn').onclick=()=>{const input=d.querySelector('#newCategoryName');const err=addCategory(input.value);if(err)alert(err);else openCategoryManager()};
   d.querySelector('#newCategoryName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();d.querySelector('#categoryAddBtn').click()}});
   d.querySelectorAll('[data-cat-action]').forEach(b=>b.onclick=()=>{const n=b.dataset.catName;if(b.dataset.catAction==='restore')restoreCategory(n);else deleteCategory(n)});
+  const rb=d.querySelector('#restoreBuiltInBtn');if(rb)rb.onclick=()=>{restoreBuiltInData();d.close()};
   d.querySelector('#categoryClose').onclick=()=>d.close();
   if(!d.open)d.showModal();
 }
@@ -469,7 +479,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=34',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v34').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=35',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v35').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
