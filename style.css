@@ -37,3 +37,6 @@
   .programLayout{display:block;overflow:auto}.programDocPane{height:62dvh;padding:10px}.scripturePane{border-left:0;border-top:1px solid #d8d3ca;min-height:38dvh;padding:10px}.scriptureFrameWrap{min-height:340px}.scriptureFrame{min-height:320px}
   .programNote{width:min(190px,55%)}.toolbarBtns{grid-template-columns:1fr 1fr 1fr}
 }
+
+.officialIssueSelect{border:1px solid #cfc9be;background:#fff;border-radius:9px;padding:8px 10px;font:inherit;min-width:155px}
+@media(max-width:760px){.officialIssueSelect{width:100%;min-width:0}}
