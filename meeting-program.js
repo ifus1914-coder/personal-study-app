@@ -14,6 +14,10 @@ const SCRIPTURE_BTN=$('#programScriptureBtn');
 const SCRIPTURE_WRAP=$('#scriptureFrameWrap');
 const ISSUE_SELECT=$('#officialIssueSelect');
 const OFFICIAL_BTN=$('#loadOfficialProgramBtn');
+const WEEK_SELECT=$('#officialWeekSelect');
+const OFFICIAL_VIEW=$('#officialProgramView');
+const OFFICIAL_TITLE=$('#officialProgramTitle');
+const OFFICIAL_LIST=$('#officialProgramList');
 const DB_NAME='personalStudyMeetingProgramDB';
 const DB_STORE='files';
 const CURRENT_KEY='meetingProgramCurrentV1';
@@ -247,40 +251,92 @@ function populateIssueSelect(){
   const codes=[shiftIssue(cur,1),cur,shiftIssue(cur,-1),shiftIssue(cur,-2),shiftIssue(cur,-3),shiftIssue(cur,-4),shiftIssue(cur,-5)];
   ISSUE_SELECT.innerHTML=codes.map(code=>'<option value="'+code+'"'+(code===cur?' selected':'')+'>'+issueLabel(code)+'</option>').join('');
 }
-function collectPdfUrls(value,out=[]){
-  if(!value)return out;
-  if(typeof value==='string'){
-    if(/\.pdf(?:$|\?)/i.test(value))out.push(value);
-    return out;
-  }
-  if(Array.isArray(value)){for(const v of value)collectPdfUrls(v,out);return out}
-  if(typeof value==='object'){for(const v of Object.values(value))collectPdfUrls(v,out)}
-  return out;
+
+const PROGRAM_API='https://rhphbkduummnientfgmp.supabase.co/functions/v1/jw-meeting-program';
+
+function programNoteKey(source,title){
+  return 'meetingProgramSectionNoteV1:'+btoa(unescape(encodeURIComponent(source+'|'+title))).replace(/=+$/,'');
 }
-async function loadOfficialProgram(){
+function getProgramNote(source,title){return localStorage.getItem(programNoteKey(source,title))||''}
+function setProgramNote(source,title,text){localStorage.setItem(programNoteKey(source,title),text)}
+
+async function loadWeeks(){
   const code=Number(ISSUE_SELECT?.value||issueStartCode());
+  if(!WEEK_SELECT)return;
+  WEEK_SELECT.disabled=true;
+  WEEK_SELECT.innerHTML='<option>주차 불러오는 중…</option>';
+  try{
+    const r=await fetch(PROGRAM_API+'?action=list&issue='+encodeURIComponent(code),{cache:'no-store'});
+    if(!r.ok)throw new Error('주차 목록을 가져오지 못했습니다.');
+    const j=await r.json();
+    const weeks=Array.isArray(j.weeks)?j.weeks:[];
+    if(!weeks.length)throw new Error('주차 프로그램을 찾지 못했습니다.');
+    WEEK_SELECT.innerHTML=weeks.map((w,i)=>'<option value="'+escapeHtml(w.url)+'">'+escapeHtml(w.title)+'</option>').join('');
+    WEEK_SELECT.disabled=false;
+  }catch(e){
+    WEEK_SELECT.innerHTML='<option>불러오기 실패</option>';
+    WEEK_SELECT.disabled=true;
+  }
+}
+
+function showOfficialView(){
+  OFFICIAL_VIEW.hidden=false;
+  EMPTY.hidden=true;
+  PAGES.hidden=true;
+}
+function hideOfficialView(){
+  OFFICIAL_VIEW.hidden=true;
+  PAGES.hidden=false;
+}
+function renderOfficialProgram(data){
+  showOfficialView();
+  const source=data.source||'';
+  OFFICIAL_TITLE.innerHTML='<div><b>'+escapeHtml(data.title||'집회 프로그램')+'</b></div><a target="_blank" rel="noopener" href="'+escapeHtml(source)+'">JW.ORG 원문 열기 ↗</a>';
+  const sections=Array.isArray(data.sections)?data.sections:[];
+  OFFICIAL_LIST.innerHTML=sections.map((s,i)=>{
+    const hasBody=String(s.body||'').trim().length>0;
+    const note=getProgramNote(source,s.title);
+    return '<article class="programSection" data-program-section="'+i+'">'
+      +'<button type="button" class="programSectionHead" aria-expanded="false"><span>'+escapeHtml(s.title)+'</span><span class="programChevron">›</span></button>'
+      +'<div class="programSectionBody" hidden>'
+      +(hasBody?'<div class="officialText">'+escapeHtml(s.body).replace(/\n/g,'<br>')+'</div>':'')
+      +'<label class="sectionNoteLabel">내 메모<textarea class="sectionNote" rows="5" placeholder="이 부분에 자유롭게 메모하세요.">'+escapeHtml(note)+'</textarea></label>'
+      +'</div></article>';
+  }).join('')||'<div class="programEmpty">프로그램 항목을 찾지 못했습니다.</div>';
+
+  OFFICIAL_LIST.querySelectorAll('.programSection').forEach((el,i)=>{
+    const head=el.querySelector('.programSectionHead');
+    const body=el.querySelector('.programSectionBody');
+    head.onclick=()=>{
+      const open=body.hidden;
+      body.hidden=!open;
+      head.setAttribute('aria-expanded',open?'true':'false');
+      el.classList.toggle('open',open);
+    };
+    const ta=el.querySelector('.sectionNote');
+    if(ta)ta.addEventListener('input',()=>setProgramNote(source,sections[i].title,ta.value));
+  });
+}
+
+async function loadOfficialProgram(){
+  const url=WEEK_SELECT?.value||'';
+  if(!url||!/^https:\/\//.test(url)){alert('먼저 주차를 선택해 주세요.');return}
   OFFICIAL_BTN.disabled=true;OFFICIAL_BTN.textContent='불러오는 중…';
   try{
-    const proxy='https://rhphbkduummnientfgmp.supabase.co/functions/v1/jw-meeting-workbook?issue='+code;
-    const p=await fetch(proxy,{mode:'cors',cache:'no-store'});
-    if(!p.ok){
-      const msg=await p.text().catch(()=> '');
-      throw new Error(msg||'공식 PDF를 내려받지 못했습니다.');
-    }
-    const blob=await p.blob();
-    const meta={id:'official:mwb:'+code,name:'생활과 봉사 집회 교재 '+issueLabel(code),type:'application/pdf',size:blob.size,lastModified:Date.now(),officialUrl:'https://www.jw.org/ko/라이브러리/jw-생활과-봉사-집회-교재/',issue:code};
-    await putBlob(meta.id,blob);
-    currentMeta=meta;
-    localStorage.setItem(CURRENT_KEY,JSON.stringify(meta));
-    await renderCurrent();
+    const r=await fetch(PROGRAM_API+'?action=detail&url='+encodeURIComponent(url),{cache:'no-store'});
+    if(!r.ok)throw new Error('공식 주간 프로그램을 불러오지 못했습니다.');
+    const data=await r.json();
+    renderOfficialProgram(data);
+    FILE_NAME.textContent=' · '+(data.title||'공식 프로그램');
   }catch(e){
-    alert('공식 교재를 직접 불러오지 못했습니다.\n'+(e?.message||'네트워크 오류')+'\n\n이 경우 파일 업로드를 이용할 수 있습니다.');
+    alert((e?.message||'공식 프로그램을 불러오지 못했습니다.')+'\n잠시 후 다시 시도해 주세요.');
   }finally{
-    OFFICIAL_BTN.disabled=false;OFFICIAL_BTN.textContent='공식 교재 불러오기';
+    OFFICIAL_BTN.disabled=false;OFFICIAL_BTN.textContent='공식 프로그램 불러오기';
   }
 }
 
 async function handleFile(file){
+  hideOfficialView();
   if(!file)return;
   const ext=file.name.toLowerCase();
   if(ext.endsWith('.docx')){
@@ -303,12 +359,15 @@ function showScripture(){
 function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function openWorkspace(){
   if(!DIALOG.open)DIALOG.showModal();
-  renderCurrent().catch(()=>{});
+  if(currentMeta&&!OFFICIAL_VIEW?.hidden)return;
+  if(currentMeta)renderCurrent().catch(()=>{});
 }
 function closeWorkspace(){DIALOG.close();setMode('')}
 
 populateIssueSelect();
+ISSUE_SELECT?.addEventListener('change',loadWeeks);
 OFFICIAL_BTN?.addEventListener('click',loadOfficialProgram);
+loadWeeks();
 $('#meetingProgramBtn')?.addEventListener('click',openWorkspace);
 $('#closeProgramBtn')?.addEventListener('click',closeWorkspace);
 FILE_INPUT?.addEventListener('change',e=>handleFile(e.target.files?.[0]).finally(()=>{e.target.value=''}));
