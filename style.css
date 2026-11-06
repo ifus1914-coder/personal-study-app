@@ -6,3 +6,34 @@
 .passwordRow{display:grid;grid-template-columns:1fr auto;gap:8px}.passwordRow input{min-width:0}.smallBtn{padding:10px 12px;white-space:nowrap}.authHint{font-size:12px;color:#777;line-height:1.45}.authMessage:not([hidden]){display:block}#syncBtn[data-state="동기화됨"],#syncBtn[data-state="로그인됨"]{font-weight:800}#syncBtn[data-state="동기화 오류"]{border-color:#b76a62;color:#8b3c35}
 .toolbarBtns{display:flex;gap:8px}.categoryManage{min-width:min(520px,90vw)}.catAdd{display:grid;grid-template-columns:1fr auto;gap:8px}.catList,.hiddenCats{display:grid;gap:7px}.hiddenCats{margin-top:6px;padding-top:10px;border-top:1px solid #e3dfd6}.catRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;background:#f7f5ef;border-radius:10px}.catRow span{font-weight:700}.catRow button{padding:7px 10px;font-size:12px}
 @media(max-width:560px){.toolbarBtns{display:grid;grid-template-columns:1fr 1fr}.toolbarBtns button{width:100%}.catAdd{grid-template-columns:1fr}.categoryManage{min-width:0}}
+
+.programDialog{width:98vw;max-width:none;height:96vh;max-height:none;padding:0;border:0;border-radius:16px;overflow:hidden}
+.programDialog::backdrop{background:rgba(0,0,0,.35)}
+.programShell{height:100%;display:grid;grid-template-rows:auto 1fr;background:#f3f1eb}
+.programTop{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd8cf}
+.programTop>div:first-child{min-width:0}.programTop b{font-size:17px}.programTop span{font-size:12px;color:#777}
+.programActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.programActions button,.programUpload{font:inherit;border:1px solid #cfc9be;background:#fff;border-radius:9px;padding:8px 10px;cursor:pointer}
+.programUpload{display:inline-flex;align-items:center}.programActions .activeTool{background:#e5eadf;border-color:#71806c;font-weight:800}
+.programLayout{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,36%);gap:0}
+.programDocPane{position:relative;min-width:0;overflow:auto;padding:18px;background:#d8d6d1}
+.programPages{display:grid;justify-content:center;gap:18px;min-height:100%}.programEmpty{max-width:560px;margin:80px auto;text-align:center;line-height:1.6;color:#64625e;background:#fff;padding:28px;border-radius:14px}
+.programPage{position:relative;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.18);overflow:hidden;max-width:100%}
+.pdfCanvas,.programImage{position:absolute;inset:0;display:block;max-width:100%}
+.pdfTextLayer{position:absolute;inset:0;z-index:3;overflow:hidden;user-select:text;-webkit-user-select:text}
+.pdfTextLayer span{position:absolute;white-space:pre;color:transparent;cursor:text;line-height:1;user-select:text;-webkit-user-select:text}
+.pdfTextLayer ::selection,.pdfTextLayer span::selection{background:rgba(255,218,82,.42);color:transparent}
+.annotationLayer{position:absolute;inset:0;z-index:4;pointer-events:none}
+.programHighlight{position:absolute;background:rgba(255,218,82,.42);border-radius:2px;pointer-events:auto;cursor:pointer}
+.programNote{position:absolute;width:min(220px,42%);min-width:130px;background:#fff5ae;border:1px solid rgba(120,100,20,.25);box-shadow:0 2px 8px rgba(0,0,0,.2);border-radius:8px;padding:5px 22px 7px 7px;pointer-events:auto;z-index:5}
+.noteHandle{font-size:11px;cursor:grab;user-select:none;padding:0 2px;color:#736b3a}.noteText{min-height:42px;max-height:170px;overflow:auto;outline:0;font-size:13px;line-height:1.4;white-space:pre-wrap}.noteDelete{position:absolute;right:3px;top:3px;border:0;background:transparent;font-size:20px;line-height:1;cursor:pointer}
+.noteCursor .programPage{cursor:crosshair}
+.scripturePane{min-width:0;overflow:auto;padding:14px;background:#fff;border-left:1px solid #d8d3ca}.scripturePane h3{margin:0 0 10px}
+.scriptureSearch{display:grid;grid-template-columns:1fr auto;gap:7px}.scriptureSearch input{min-width:0}.scriptureHelp{font-size:12px;color:#777;line-height:1.45}
+.scriptureFrameWrap{min-height:520px;border:1px solid #ddd8cf;border-radius:10px;overflow:hidden;background:#faf9f6;display:grid;grid-template-rows:auto 1fr auto}
+.scripturePlaceholder{padding:25px;text-align:center;color:#777;align-self:center}.scriptureSideTitle{padding:9px 10px;font-weight:800;border-bottom:1px solid #e6e1d8}.scriptureFrame{width:100%;height:100%;min-height:500px;border:0;background:#fff}.scriptureFallback{display:block;padding:9px 10px;border-top:1px solid #e6e1d8;text-align:center;text-decoration:none;font-size:13px}
+@media(max-width:760px){
+  .programDialog{width:100vw;height:100dvh;border-radius:0}
+  .programTop{align-items:flex-start;flex-direction:column}.programActions{width:100%;display:grid;grid-template-columns:repeat(2,1fr)}.programActions button,.programUpload{justify-content:center;text-align:center}
+  .programLayout{display:block;overflow:auto}.programDocPane{height:62dvh;padding:10px}.scripturePane{border-left:0;border-top:1px solid #d8d3ca;min-height:38dvh;padding:10px}.scriptureFrameWrap{min-height:340px}.scriptureFrame{min-height:320px}
+  .programNote{width:min(190px,55%)}.toolbarBtns{grid-template-columns:1fr 1fr 1fr}
+}
