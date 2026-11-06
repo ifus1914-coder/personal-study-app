@@ -62,3 +62,36 @@
   .programSectionHead{padding:14px;font-size:15px}
   .programSectionBody{padding:0 14px 14px}
 }
+
+/* v42: electronic meeting program is primary; iPad keeps the same two-pane layout as PC */
+.programDocPane.electronicMode{background:#f3f1eb;padding:14px}
+.programDocPane.electronicMode .officialProgramView{max-width:none;width:100%;box-shadow:none;border:1px solid #e2ddd3;border-radius:12px}
+.fileTools{position:relative}
+.fileTools>summary{list-style:none;cursor:pointer;border:1px solid #cfc9be;background:#fff;border-radius:9px;padding:8px 10px;white-space:nowrap}
+.fileTools>summary::-webkit-details-marker{display:none}
+.fileToolsPanel{position:absolute;right:0;top:calc(100% + 6px);z-index:20;display:grid;gap:6px;min-width:170px;padding:8px;background:#fff;border:1px solid #ddd7cc;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.fileToolsPanel .programUpload,.fileToolsPanel button{width:100%;justify-content:center}
+.programActions{display:flex;flex-wrap:wrap}
+.programLayout{grid-template-columns:minmax(0,1.7fr) minmax(280px,.9fr)}
+.officialProgramTitle{background:#f6f8f4}
+.programSectionHead{font-size:17px}
+.programSectionBody{background:#fbfaf7}
+.sectionNote{background:#fff}
+@media(max-width:900px){
+  .programLayout{grid-template-columns:minmax(0,1.6fr) minmax(260px,.95fr)}
+  .programActions{display:flex;flex-wrap:wrap}
+  .programActions select,.programActions button,.programActions .fileTools{flex:0 1 auto}
+  .programDocPane{padding:10px}
+  .scripturePane{padding:10px}
+}
+@media(max-width:640px){
+  .programDialog{width:100vw;height:100dvh;border-radius:0}
+  .programTop{align-items:flex-start;flex-direction:column}
+  .programActions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .programActions select,.programActions button,.programActions .fileTools{width:100%}
+  .fileToolsPanel{position:fixed;left:12px;right:12px;top:auto;bottom:12px;min-width:0}
+  .programLayout{display:block;overflow:auto}
+  .programDocPane{height:auto;min-height:55dvh}
+  .scripturePane{border-left:0;border-top:1px solid #d8d3ca;min-height:40dvh}
+  .officialProgramView{border-radius:8px}
+}
