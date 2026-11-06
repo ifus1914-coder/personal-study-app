@@ -40,3 +40,25 @@
 
 .officialIssueSelect{border:1px solid #cfc9be;background:#fff;border-radius:9px;padding:8px 10px;font:inherit;min-width:155px}
 @media(max-width:760px){.officialIssueSelect{width:100%;min-width:0}}
+
+.officialWeekSelect{border:1px solid #cfc9be;background:#fff;border-radius:9px;padding:8px 10px;font:inherit;min-width:180px}
+.officialProgramView{max-width:980px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.14);overflow:hidden}
+.officialProgramTitle{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 18px;border-bottom:1px solid #e4dfd6;background:#faf9f6}
+.officialProgramTitle a{font-size:13px;text-decoration:none}
+.officialProgramList{display:grid}
+.programSection{border-bottom:1px solid #ece7de}
+.programSectionHead{width:100%;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;border:0;background:#fff;padding:15px 18px;font-size:16px;font-weight:800;cursor:pointer}
+.programSectionHead:hover{background:#f8f6f1}
+.programChevron{font-size:24px;transition:transform .15s ease}
+.programSection.open .programChevron{transform:rotate(90deg)}
+.programSectionBody{padding:0 18px 16px;background:#fff}
+.officialText{font-size:15px;line-height:1.65;color:#333;padding:8px 0 14px}
+.sectionNoteLabel{display:grid;gap:7px;font-size:13px;font-weight:800}
+.sectionNote{width:100%;min-height:110px;resize:vertical;line-height:1.5}
+@media(max-width:760px){
+  .officialWeekSelect{width:100%;min-width:0}
+  .officialProgramView{border-radius:10px}
+  .officialProgramTitle{align-items:flex-start;flex-direction:column}
+  .programSectionHead{padding:14px;font-size:15px}
+  .programSectionBody{padding:0 14px 14px}
+}
