@@ -359,16 +359,17 @@ function showScripture(){
 function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function openWorkspace(){
   if(!DIALOG.open)DIALOG.showModal();
-  if(currentMeta&&!OFFICIAL_VIEW?.hidden)return;
-  if(currentMeta)renderCurrent().catch(()=>{});
+  if(OFFICIAL_VIEW.hidden&&WEEK_SELECT&&!WEEK_SELECT.disabled&&/^https:\/\//.test(WEEK_SELECT.value||'')){
+    loadOfficialProgram().catch(()=>{});
+  }
 }
 function closeWorkspace(){DIALOG.close();setMode('')}
 
 populateIssueSelect();
-ISSUE_SELECT?.addEventListener('change',async()=>{await loadWeeks().then(()=>loadOfficialProgram()).catch(()=>{});await loadOfficialProgram()});
+ISSUE_SELECT?.addEventListener('change',async()=>{await loadWeeks();await loadOfficialProgram()});
 WEEK_SELECT?.addEventListener('change',loadOfficialProgram);
 OFFICIAL_BTN?.addEventListener('click',loadOfficialProgram);
-loadWeeks();
+loadWeeks().then(()=>loadOfficialProgram()).catch(()=>{});
 $('#meetingProgramBtn')?.addEventListener('click',openWorkspace);
 $('#closeProgramBtn')?.addEventListener('click',closeWorkspace);
 FILE_INPUT?.addEventListener('change',e=>handleFile(e.target.files?.[0]).finally(()=>{e.target.value=''}));
