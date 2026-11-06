@@ -12,6 +12,8 @@ const HL_BTN=$('#highlightProgramBtn');
 const SCRIPTURE_INPUT=$('#programScriptureInput');
 const SCRIPTURE_BTN=$('#programScriptureBtn');
 const SCRIPTURE_WRAP=$('#scriptureFrameWrap');
+const ISSUE_SELECT=$('#officialIssueSelect');
+const OFFICIAL_BTN=$('#loadOfficialProgramBtn');
 const DB_NAME='personalStudyMeetingProgramDB';
 const DB_STORE='files';
 const CURRENT_KEY='meetingProgramCurrentV1';
@@ -222,6 +224,65 @@ async function renderCurrent(){
   else if(currentMeta.type.startsWith('image/'))renderImage(blob);
   else{clearPages();EMPTY.innerHTML='워드 파일은 고정 배치가 깨질 수 있습니다.<br><small>워드에서 PDF로 저장한 뒤 업로드해 주세요.</small>'}
 }
+
+function issueStartCode(d=new Date()){
+  let y=d.getFullYear(),m=d.getMonth()+1;
+  if(m%2===0)m-=1;
+  return y*100+m;
+}
+function shiftIssue(code,steps){
+  let y=Math.floor(code/100),m=code%100;
+  m+=steps*2;
+  while(m>12){m-=12;y++}
+  while(m<1){m+=12;y--}
+  return y*100+m;
+}
+function issueLabel(code){
+  const y=Math.floor(code/100),m=code%100;
+  return y+'년 '+m+'-'+(m+1)+'월';
+}
+function populateIssueSelect(){
+  if(!ISSUE_SELECT)return;
+  const cur=issueStartCode();
+  const codes=[shiftIssue(cur,1),cur,shiftIssue(cur,-1),shiftIssue(cur,-2),shiftIssue(cur,-3),shiftIssue(cur,-4),shiftIssue(cur,-5)];
+  ISSUE_SELECT.innerHTML=codes.map(code=>'<option value="'+code+'"'+(code===cur?' selected':'')+'>'+issueLabel(code)+'</option>').join('');
+}
+function collectPdfUrls(value,out=[]){
+  if(!value)return out;
+  if(typeof value==='string'){
+    if(/\.pdf(?:$|\?)/i.test(value))out.push(value);
+    return out;
+  }
+  if(Array.isArray(value)){for(const v of value)collectPdfUrls(v,out);return out}
+  if(typeof value==='object'){for(const v of Object.values(value))collectPdfUrls(v,out)}
+  return out;
+}
+async function loadOfficialProgram(){
+  const code=Number(ISSUE_SELECT?.value||issueStartCode());
+  OFFICIAL_BTN.disabled=true;OFFICIAL_BTN.textContent='불러오는 중…';
+  try{
+    const api='https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS?alllangs=0&fileformat=PDF&issue='+code+'&langwritten=KO&output=json&pub=mwb&txtCMSLang=KO';
+    const r=await fetch(api,{mode:'cors',cache:'no-store'});
+    if(!r.ok)throw new Error('공식 자료 목록을 불러오지 못했습니다.');
+    const j=await r.json();
+    const urls=[...new Set(collectPdfUrls(j))];
+    const url=urls.find(u=>/mwb/i.test(u)&&/KO/i.test(u))||urls[0];
+    if(!url)throw new Error('공식 PDF 주소를 찾지 못했습니다.');
+    const p=await fetch(url,{mode:'cors',cache:'no-store'});
+    if(!p.ok)throw new Error('공식 PDF를 내려받지 못했습니다.');
+    const blob=await p.blob();
+    const meta={id:'official:mwb:'+code,name:'생활과 봉사 집회 교재 '+issueLabel(code),type:'application/pdf',size:blob.size,lastModified:Date.now(),officialUrl:url,issue:code};
+    await putBlob(meta.id,blob);
+    currentMeta=meta;
+    localStorage.setItem(CURRENT_KEY,JSON.stringify(meta));
+    await renderCurrent();
+  }catch(e){
+    alert('공식 교재를 직접 불러오지 못했습니다.\n'+(e?.message||'네트워크 오류')+'\n\n이 경우 파일 업로드를 이용할 수 있습니다.');
+  }finally{
+    OFFICIAL_BTN.disabled=false;OFFICIAL_BTN.textContent='공식 교재 불러오기';
+  }
+}
+
 async function handleFile(file){
   if(!file)return;
   const ext=file.name.toLowerCase();
@@ -249,6 +310,8 @@ function openWorkspace(){
 }
 function closeWorkspace(){DIALOG.close();setMode('')}
 
+populateIssueSelect();
+OFFICIAL_BTN?.addEventListener('click',loadOfficialProgram);
 $('#meetingProgramBtn')?.addEventListener('click',openWorkspace);
 $('#closeProgramBtn')?.addEventListener('click',closeWorkspace);
 FILE_INPUT?.addEventListener('change',e=>handleFile(e.target.files?.[0]).finally(()=>{e.target.value=''}));
