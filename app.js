@@ -247,6 +247,7 @@ function openDetail(x){
   if(!x)return;
   let d=$('#detail');
   if(!d){d=document.createElement('dialog');d.id='detail';document.body.appendChild(d)}
+  d.classList.toggle('fullscreenDialog',x.category==='평일 집회 사회');
   d.innerHTML='<div class="detailWrap"><button class="detailClose" aria-label="닫기">✕</button><div class="meta">'+esc(x.category)+' · '+esc(x.subcategory)+'</div><h2>'+esc(x.title)+'</h2>'+(x.scripture?'<div class="scripture">'+scriptureHtml(x.scripture)+'</div>':'')+'<div class="detailBody">'+formatContent(x.content)+'</div>'+(x.application?'<div class="detailApply"><b>적용:</b> '+esc(x.application)+'</div>':'')+'<div class="tags">'+(x.keywords||[]).map(k=>'<span class="tag">#'+esc(k)+'</span>').join('')+'</div>'+(x.source?'<p><a target="_blank" rel="noopener" href="'+esc(jwLibraryUrl(x.source))+'">JW Library로 열기 ↗</a></p>':'')+'</div>';
   d.querySelector('.detailClose').onclick=()=>d.close();
   d.showModal();
@@ -258,6 +259,10 @@ function openEditor(x=null){
   $('#category').value=x?.category||(tab===FAVORITES_CAT?(getCategories().find(c=>c!==FAVORITES_CAT)||'개인연구'):tab);
   for(const k of ['subcategory','title','scripture','content','application','source'])$('#'+k).value=x?.[k]||'';
   $('#keywords').value=(x?.keywords||[]).join(', ');
+  const full=(x?.category==='평일 집회 사회'||(!x&&tab==='평일 집회 사회'));
+  $('#editor').classList.toggle('fullscreenDialog',full);
+  $('#content').classList.toggle('meetingEditorArea',full);
+  $('#application').classList.toggle('meetingEditorSmall',full);
   $('#editor').showModal();
 }
 function setFavorite(id){
@@ -351,7 +356,7 @@ $('#form').onsubmit=e=>{
 let deferred;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;$('#installBtn').hidden=true}};
-if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=45',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v45').map(k=>caches.delete(k))))}
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=46',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});if('caches'in window)caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('personal-study-v')&&k!=='personal-study-v46').map(k=>caches.delete(k))))}
 render();
 if(authSession){setSyncButton('로그인됨');syncNow(true)}else{setSyncButton('동기화')}
 window.addEventListener('online',()=>{if(authSession)syncNow(false)});
