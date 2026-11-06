@@ -261,17 +261,14 @@ async function loadOfficialProgram(){
   const code=Number(ISSUE_SELECT?.value||issueStartCode());
   OFFICIAL_BTN.disabled=true;OFFICIAL_BTN.textContent='불러오는 중…';
   try{
-    const api='https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS?alllangs=0&fileformat=PDF&issue='+code+'&langwritten=KO&output=json&pub=mwb&txtCMSLang=KO';
-    const r=await fetch(api,{mode:'cors',cache:'no-store'});
-    if(!r.ok)throw new Error('공식 자료 목록을 불러오지 못했습니다.');
-    const j=await r.json();
-    const urls=[...new Set(collectPdfUrls(j))];
-    const url=urls.find(u=>/mwb/i.test(u)&&/KO/i.test(u))||urls[0];
-    if(!url)throw new Error('공식 PDF 주소를 찾지 못했습니다.');
-    const p=await fetch(url,{mode:'cors',cache:'no-store'});
-    if(!p.ok)throw new Error('공식 PDF를 내려받지 못했습니다.');
+    const proxy='https://rhphbkduummnientfgmp.supabase.co/functions/v1/jw-meeting-workbook?issue='+code;
+    const p=await fetch(proxy,{mode:'cors',cache:'no-store'});
+    if(!p.ok){
+      const msg=await p.text().catch(()=> '');
+      throw new Error(msg||'공식 PDF를 내려받지 못했습니다.');
+    }
     const blob=await p.blob();
-    const meta={id:'official:mwb:'+code,name:'생활과 봉사 집회 교재 '+issueLabel(code),type:'application/pdf',size:blob.size,lastModified:Date.now(),officialUrl:url,issue:code};
+    const meta={id:'official:mwb:'+code,name:'생활과 봉사 집회 교재 '+issueLabel(code),type:'application/pdf',size:blob.size,lastModified:Date.now(),officialUrl:'https://www.jw.org/ko/라이브러리/jw-생활과-봉사-집회-교재/',issue:code};
     await putBlob(meta.id,blob);
     currentMeta=meta;
     localStorage.setItem(CURRENT_KEY,JSON.stringify(meta));
