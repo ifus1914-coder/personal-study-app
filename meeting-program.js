@@ -365,7 +365,8 @@ function openWorkspace(){
 function closeWorkspace(){DIALOG.close();setMode('')}
 
 populateIssueSelect();
-ISSUE_SELECT?.addEventListener('change',loadWeeks);
+ISSUE_SELECT?.addEventListener('change',async()=>{await loadWeeks().then(()=>loadOfficialProgram()).catch(()=>{});await loadOfficialProgram()});
+WEEK_SELECT?.addEventListener('change',loadOfficialProgram);
 OFFICIAL_BTN?.addEventListener('click',loadOfficialProgram);
 loadWeeks();
 $('#meetingProgramBtn')?.addEventListener('click',openWorkspace);
